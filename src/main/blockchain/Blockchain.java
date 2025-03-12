@@ -29,7 +29,7 @@ public class Blockchain{
 
     public String createPreviousBlockHash(){
         Block previousBlock = this.blockchain.get(this.blockchain.size()-1);
-        String hash;
+        String hash = Hash.hashSHA256(previousBlock);
         return hash;
     }
 

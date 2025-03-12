@@ -25,7 +25,9 @@ public class Block{
         return this.hash;
     }
 
-
+    public String toString(){
+        return this.transaction + Integer.toString(this.nounce) + this.hash;
+    }
 }
 
 
