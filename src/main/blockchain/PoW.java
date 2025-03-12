@@ -11,7 +11,6 @@ public class PoW{
         while(!hash.startsWith(prefix)){
             block.nounce = Utils.createRandomNumber(999999);
             hash = Utils.hashSHA256(block.toString());
-            System.out.println(hash);
         }
         return true;
     }
