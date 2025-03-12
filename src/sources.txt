@@ -1,5 +1,7 @@
 main/main.java
+main/blockchain/Transaction.java
 main/blockchain/Blockchain.java
 main/blockchain/Block.java
 main/blockchain/PoW.java
 main/Utils.java
+main/auctions/User.java
