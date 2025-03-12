@@ -10,7 +10,6 @@ public class main{
 
         blockchain.addBlock("trans 1");
 
-        System.out.println(blockchain.blockchain.get(1).getHash());
 
     }
 }
