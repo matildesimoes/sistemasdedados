@@ -1,17 +1,17 @@
 package main.auctions;
 
+import java.io.Serializable;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
 
-public class User{
-    protected String email;
+public class User implements Serializable{
+    protected int id;
     protected KeyPair keyPair;
 
-    public User(String email){
-        this.email = email;
+    public User(){
         this.keyPair = generateKeyPair();
     }
 
@@ -25,8 +25,8 @@ public class User{
         }
     }
 
-    public String getEmail(){
-        return this.email;
+    public int getId(){
+        return this.id;
     }
 
     public PublicKey getPublicKey() {

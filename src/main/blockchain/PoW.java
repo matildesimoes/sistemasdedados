@@ -10,8 +10,9 @@ public class PoW{
         String prefix = "0".repeat(DIFFICULTY);
         while(!hash.startsWith(prefix)){
             block.nounce = Utils.createRandomNumber(999999);
-            hash = Utils.hashSHA256(block.toString());
+            hash = Utils.hashSHA256(block);
         }
+        block.hash = hash;
         return true;
     }
 }

@@ -3,10 +3,9 @@ package main;
 import java.util.Random;
 import java.security.SecureRandom;
 import java.util.Base64;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectOutputStream;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.nio.charset.StandardCharsets;
-
 
 public class Utils{
 
@@ -22,25 +21,27 @@ public static int createRandomNumber(int length){
     return rand.nextInt(length);
 }
 
-public static String hashSHA256(String input) {
+public static String hashSHA256(Object obj) {
     try {
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(bos);
+        oos.writeObject(obj);
+        oos.flush();
+        byte[] bytes = bos.toByteArray();
 
-        // Convert input string to byte array and compute hash
-        byte[] hashBytes = digest.digest(input.getBytes(StandardCharsets.UTF_8));
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        byte[] hashBytes = md.digest(bytes);
 
         // Convert byte array into hexadecimal string
-        StringBuilder hexString = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
         for (byte b : hashBytes) {
-            String hex = Integer.toHexString(0xff & b);
-            if (hex.length() == 1) hexString.append('0');
-            hexString.append(hex);
+            sb.append(String.format("%02x", b));
         }
 
-        return hexString.toString();
+        return sb.toString();
 
-    } catch (NoSuchAlgorithmException e) {
-        throw new RuntimeException("SHA-256 algorithm not found!", e);
+    } catch (Exception e) {
+        throw new RuntimeException("Error generating Hash!", e);
     }
 }
 
