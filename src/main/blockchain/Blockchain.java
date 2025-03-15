@@ -22,13 +22,13 @@ public class Blockchain{
     public Blockchain(){
         this.blockchain = new ArrayList<>();
         Block genesisBlock = new Block(Utils.createRandomString((16)));  
+        genesisBlock.hash = Utils.hashSHA256(genesisBlock);
         this.blockchain.add(genesisBlock);
     }
 
     public void addBlock(String transaction){
         int nounce = 0;
         String previousHash = this.blockchain.get(this.blockchain.size()-1).getHash();
-        System.out.println(previousHash);
         Block newBlock = new Block(transaction,nounce,previousHash);
         newBlock.hash = Utils.hashSHA256(newBlock);
         boolean miner = PoW.miner(newBlock);
