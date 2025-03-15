@@ -17,6 +17,7 @@ import main.auctions.*;
 import main.Utils;
 
 public class Blockchain{
+    private static final String FILE_PATH = "data/blockchain.json";
     public List<Block> blockchain;
 
     public Blockchain(){
@@ -35,23 +36,21 @@ public class Blockchain{
         this.blockchain.add(newBlock);
     }
 
-    public void saveBlockchain(String path) {
+    public void saveBlockchain() {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        try (FileWriter writer = new FileWriter(path)) {
+        try (FileWriter writer = new FileWriter(FILE_PATH)) {
             gson.toJson(this.blockchain, writer);
-            System.out.println("Blockchain saved in: " + path);
         } catch (IOException e) {
             System.err.println("Error saving blockchain: " + e.getMessage());
         }
     }
 
-    public void loadBlockchain(String path) {
+    public void loadBlockchain() {
         Gson gson = new Gson();
-        try (FileReader reader = new FileReader(path)) {
+        try (FileReader reader = new FileReader(FILE_PATH)) {
             Type listType = new TypeToken<List<Block>>() {}.getType();
             List<Block> loadedBlockchain = gson.fromJson(reader, listType);
             this.blockchain = loadedBlockchain;
-            System.out.println("Blockchain loaded successfully!");
         } catch (IOException e) {
             System.err.println("Error loading Blockchain: " + e.getMessage());
         }
@@ -73,7 +72,7 @@ public class Blockchain{
         blockchain.addBlock(trans2.signature);
         blockchain.addBlock(trans3.signature);
 
-        blockchain.saveBlockchain("data/blockchain.json");
+        blockchain.saveBlockchain();
         
     }
 

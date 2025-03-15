@@ -13,7 +13,7 @@ public class main{
 
        blockchain.createBlockchain();
 
-       blockchain.loadBlockchain("data/blockchain.json");
+       blockchain.loadBlockchain();
 
     }
 }
