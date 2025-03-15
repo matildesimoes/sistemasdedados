@@ -13,12 +13,7 @@ public class main{
 
        blockchain.createBlockchain();
 
-       blockchain.loadBlockchain("dataset.ser");
-
-        System.out.println("Blockchain carregada:");
-        for (Block block : blockchain.blockchain) {
-            System.out.println(block);
-        }
+       blockchain.loadBlockchain("data/blockchain.json");
 
     }
 }

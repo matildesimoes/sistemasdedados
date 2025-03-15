@@ -3,12 +3,15 @@ package main.blockchain;
 import java.util.List;
 import java.util.ArrayList;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.ObjectOutputStream;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import java.io.FileReader;
 import java.io.Reader;
+import java.io.FileWriter;
+import java.io.IOException;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+import java.lang.reflect.Type;
 
 import main.auctions.*;
 import main.Utils;
@@ -25,28 +28,32 @@ public class Blockchain{
     public void addBlock(String transaction){
         int nounce = 0;
         String previousHash = this.blockchain.get(this.blockchain.size()-1).getHash();
+        System.out.println(previousHash);
         Block newBlock = new Block(transaction,nounce,previousHash);
         newBlock.hash = Utils.hashSHA256(newBlock);
         boolean miner = PoW.miner(newBlock);
         this.blockchain.add(newBlock);
     }
 
-    public static void saveBlockchain(List<Block> blockchain, String path) {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(path))) {
-            oos.writeObject(blockchain);
-            System.out.println("Blockchain saved!");
+    public void saveBlockchain(String path) {
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        try (FileWriter writer = new FileWriter(path)) {
+            gson.toJson(this.blockchain, writer);
+            System.out.println("Blockchain saved in: " + path);
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Error saving blockchain: " + e.getMessage());
         }
     }
 
-    public static List<Block> loadBlockchain(String path) {
-        try (Reader reader = new FileReader(path)) {
-            Gson gson = new Gson();
-            return gson.fromJson(reader, new TypeToken<List<Block>>() {}.getType());
+    public void loadBlockchain(String path) {
+        Gson gson = new Gson();
+        try (FileReader reader = new FileReader(path)) {
+            Type listType = new TypeToken<List<Block>>() {}.getType();
+            List<Block> loadedBlockchain = gson.fromJson(reader, listType);
+            this.blockchain = loadedBlockchain;
+            System.out.println("Blockchain loaded successfully!");
         } catch (IOException e) {
-            e.printStackTrace();
-            return new ArrayList<>();
+            System.err.println("Error loading Blockchain: " + e.getMessage());
         }
     }
 
@@ -66,7 +73,7 @@ public class Blockchain{
         blockchain.addBlock(trans2.signature);
         blockchain.addBlock(trans3.signature);
 
-        saveBlockchain(blockchain.blockchain, "dataset.ser");
+        blockchain.saveBlockchain("data/blockchain.json");
         
     }
 
