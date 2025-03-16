@@ -33,6 +33,7 @@ public class Blockchain{
         Block newBlock = new Block(transaction,nounce,previousHash);
         newBlock.hash = Utils.hashSHA256(newBlock);
         boolean miner = PoW.miner(newBlock);
+        newBlock.merkleRoot = MerkleTree.getMerkleRoot(this.blockchain); 
         this.blockchain.add(newBlock);
     }
 

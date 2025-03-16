@@ -11,6 +11,7 @@ public class Block implements Serializable{
     public String hash;
     private String prevHash;
     private Timestamp timestamp;
+    public String merkleRoot;
     
     public Block(String transaction){
         this.transaction = transaction;
@@ -36,8 +37,12 @@ public class Block implements Serializable{
         return this.hash;
     }
 
-    public String getprevHash(){
+    public String getPrevHash(){
         return this.prevHash;
+    }
+
+    public String getMerkleRoot(){
+        return this.merkleRoot;
     }
 
 }

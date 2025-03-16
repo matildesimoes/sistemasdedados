@@ -10,10 +10,13 @@ public class main{
     public static void main(String[] args){
 
        Blockchain blockchain = new Blockchain(); 
-
-       blockchain.createBlockchain();
-
+      
        blockchain.loadBlockchain();
+        User user3 = new User();
+        User user4 = new User();
+
+        Transaction trans1 = new Transaction(user3, user4, "ricardo");
+        blockchain.addBlock(trans1.signature);
 
     }
 }
