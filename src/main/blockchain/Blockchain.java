@@ -19,9 +19,12 @@ import main.Utils;
 public class Blockchain{
     private static final String FILE_PATH = "data/blockchain.json";
     public List<Block> blockchain;
+    private List<Chain> chains;
 
     public Blockchain(){
         this.blockchain = new ArrayList<>();
+        this.chains = new ArrayList<>();
+
         Block genesisBlock = new Block(Utils.createRandomString((16)));  
         genesisBlock.hash = Utils.hashSHA256(genesisBlock);
         this.blockchain.add(genesisBlock);
