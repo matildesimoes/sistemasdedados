@@ -16,7 +16,8 @@ public class main{
         User user4 = new User();
 
         Transaction trans1 = new Transaction(user3, user4, "ricardo");
-        blockchain.addBlock(trans1.signature);
+        Chain mainChain = blockchain.getChains().get(0);
+        blockchain.addBlock(trans1.signature,mainChain);
 
     }
 }
