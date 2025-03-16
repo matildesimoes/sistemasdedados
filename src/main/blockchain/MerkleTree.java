@@ -5,8 +5,8 @@ import java.util.List;
 import main.Utils;
 
 public class MerkleTree{
-    public static String getMerkleRoot(List<Block> blockchain){
-        if(blockchain == null || blockchain.isEmpty()) return "";
+    public static String getMerkleRoot(List<Block> blockchain, String currentTransaction){
+        if(blockchain == null || blockchain.isEmpty() && currentTransaction == null) return "";
 
         List<String> tempHashes = new ArrayList<>();
         for(Block block : blockchain){
@@ -14,7 +14,10 @@ public class MerkleTree{
             tempHashes.add(Utils.hashSHA256(trans));
         }
 
-        System.out.println(tempHashes.size());
+        if (currentTransaction != null && !currentTransaction.isEmpty()) {
+            tempHashes.add(Utils.hashSHA256(currentTransaction));
+        }
+
         while (tempHashes.size() > 1) {
             List<String> combinedHashes = new ArrayList<>();
 
@@ -29,7 +32,6 @@ public class MerkleTree{
                 }
             }
             tempHashes = combinedHashes;
-            System.out.println(tempHashes.size());
         }
         return tempHashes.get(0);
     }

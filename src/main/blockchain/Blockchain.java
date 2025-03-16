@@ -21,28 +21,34 @@ public class Blockchain{
     private static final String FILE_PATH = "data/chain_";
     private List<Chain> chains;
 
-    public Blockchain(){
+    private Blockchain(){
         this.chains = new ArrayList<>();
-        Chain genesisChain = new Chain();
-
-        Block genesisBlock = new Block(Utils.createRandomString((16)));  
-        genesisBlock.hash = Utils.hashSHA256(genesisBlock);
-
-        genesisChain.addCompletedBlock(genesisBlock);
-        this.chains.add(genesisChain);
     }
 
     public void addBlock(String transaction, Chain chain){
         int nounce = 0;
         String previousHash = chain.blocks.get(chain.size()-1).getHash();
         Block newBlock = new Block(transaction,nounce,previousHash);
+        newBlock.merkleRoot = MerkleTree.getMerkleRoot(chain.blocks, newBlock.getTransaction()); 
         newBlock.hash = Utils.hashSHA256(newBlock);
         boolean miner = PoW.miner(newBlock);
-        newBlock.merkleRoot = MerkleTree.getMerkleRoot(chain.blocks); 
         if(newBlock.getPrevHash() == chain.getLatest().getPrevHash())
             createNewChain(chain, newBlock);
         else
             chain.addCompletedBlock(newBlock);
+    }
+
+    public static Blockchain createNewBlockchain(){
+        Blockchain blockchain = new Blockchain();
+
+        Chain genesisChain = new Chain();
+        Block genesisBlock = new Block(Utils.createRandomString((16)));  
+        genesisBlock.merkleRoot = MerkleTree.getMerkleRoot(genesisChain.blocks, genesisBlock.getTransaction());
+        genesisBlock.hash = Utils.hashSHA256(genesisBlock);
+        genesisChain.addCompletedBlock(genesisBlock);
+        
+        blockchain.chains.add(genesisChain);
+        return blockchain;
     }
 
     public void createNewChain(Chain chain, Block newBlock){
@@ -71,9 +77,11 @@ public class Blockchain{
         }
     }
 
-    public void loadBlockchain() {
+    public static Blockchain loadBlockchain() {
         Gson gson = new Gson();
-        chains.clear();
+        Blockchain blockchain = new Blockchain();
+        blockchain.chains.clear();
+
         int index = 1;
         while(true){
             String fileName = FILE_PATH + index + ".json";
@@ -82,39 +90,22 @@ public class Blockchain{
             try (FileReader reader = new FileReader(file)) {
                 Type listType = new TypeToken<Chain>() {}.getType();
                 Chain loadedChain = gson.fromJson(reader, listType);
-                chains.add(loadedChain);
+                blockchain.chains.add(loadedChain);
             } catch (IOException e) {
                 System.err.println("Error loading Blockchain: " + e.getMessage());
             }
             index++;
         }
+        return blockchain;
     }
+
     
     
     public List<Chain> getChains() {
-        return chains;
+        return this.chains;
     }
+    
 
-    public static void createBlockchain(){
-        User user1 = new User();
-        User user2 = new User();
-        User user3 = new User();
-        User user4 = new User();
-
-        Transaction trans1 = new Transaction(user1, user2, "ricardo");
-        Transaction trans2 = new Transaction(user4, user3, "maria");
-        Transaction trans3 = new Transaction(user3, user1, "matilde");
-
-        Blockchain blockchain = new Blockchain();
-        Chain mainChain = blockchain.getChains().get(0);
-
-        blockchain.addBlock(trans1.signature, mainChain);
-        blockchain.addBlock(trans2.signature, mainChain);
-        blockchain.addBlock(trans3.signature, mainChain);
-
-        blockchain.saveBlockchain();
-        
-    }
 
 
 }
