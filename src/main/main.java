@@ -28,11 +28,10 @@ public class main{
 
     public static void main(String[] args){
 
-       Blockchain blockchain = Blockchain.createNewBlockchain(); 
-
+       //Blockchain blockchain = Blockchain.createNewBlockchain(); 
        //createTestBlockchain(blockchain);
 
-       blockchain = Blockchain.loadBlockchain();
+       Blockchain blockchain = Blockchain.loadBlockchain();
         User user3 = new User();
         User user4 = new User();
 

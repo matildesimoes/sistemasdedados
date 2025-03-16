@@ -18,6 +18,8 @@ public class MerkleTree{
             tempHashes.add(Utils.hashSHA256(currentTransaction));
         }
 
+        System.out.println("------------------") ;
+        System.out.println("chain size: " + tempHashes.size());
         while (tempHashes.size() > 1) {
             List<String> combinedHashes = new ArrayList<>();
 
@@ -32,6 +34,7 @@ public class MerkleTree{
                 }
             }
             tempHashes = combinedHashes;
+            System.out.println(tempHashes.size());
         }
         return tempHashes.get(0);
     }
