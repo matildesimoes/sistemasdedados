@@ -1,3 +1,5 @@
+- Relatório 
+
 # Bloco (1)
 
 O bloco tem uma transação assinada pelo buyer, um nounce que é um inteiro gerado aleatoriamente, a hash do bloco anterior, o tempo em que foi criado, a Merkle root hash e ainda a hash do próprio bloco.
@@ -30,5 +32,6 @@ Para criar um bloco, pegamos em todos os parâmetros e fazemos hash deles. Depoi
 
 # Merkle Tree (1)
 
-Recebe a chain atual e a transação do bloco que o miner minerou. A árvore combina hashs duas as duas e se o número for ímpar duplica a última hash. No final temos a Merkle root hash.
+Recebe a chain atual e a transação do bloco que o miner minerou. A árvore combina hashs duas as duas e se o número for ímpar combina logo com o outro par. No final temos a Merkle root hash.
+Verifica-se a Merkle Tree 
 
