@@ -6,6 +6,9 @@ import java.util.Base64;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.security.MessageDigest;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+
 
 public class Utils{
 
@@ -42,6 +45,15 @@ public static String hashSHA256(Object obj) {
 
     } catch (Exception e) {
         throw new RuntimeException("Error generating Hash!", e);
+    }
+}
+public static KeyPair generateKeyPair(){
+    try{
+        KeyPairGenerator gen = KeyPairGenerator.getInstance("RSA");
+        gen.initialize(2048);
+        return gen.generateKeyPair();
+    }catch (Exception e) {
+        throw new RuntimeException("Error generating Key Pair", e);
     }
 }
 

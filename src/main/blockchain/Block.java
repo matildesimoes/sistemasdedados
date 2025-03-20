@@ -8,10 +8,10 @@ import java.sql.Timestamp;
 public class Block implements Serializable{
     private String transaction;
     public int nounce;
-    public String hash;
     private String prevHash;
     private Timestamp timestamp;
     public String merkleRoot;
+    public String hash;
     
     public Block(String transaction){
         this.transaction = transaction;

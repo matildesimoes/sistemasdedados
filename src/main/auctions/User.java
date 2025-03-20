@@ -8,10 +8,10 @@ import java.io.IOException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.security.KeyPair;
-import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
+import main.Utils;
 
 public class User implements Serializable{
     private static final String COUNTER_FILE = "data/userId_counter.txt";
@@ -20,18 +20,9 @@ public class User implements Serializable{
 
     public User(){
         this.id = getNextId();
-        this.keyPair = generateKeyPair();
+        this.keyPair = Utils.generateKeyPair();
     }
 
-    private KeyPair generateKeyPair(){
-        try{
-            KeyPairGenerator gen = KeyPairGenerator.getInstance("RSA");
-            gen.initialize(2048);
-            return gen.generateKeyPair();
-        }catch (Exception e) {
-            throw new RuntimeException("Error generating Key Pair", e);
-        }
-    }
 
     public int getId(){
         return this.id;

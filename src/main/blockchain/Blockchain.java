@@ -32,7 +32,7 @@ public class Blockchain{
         newBlock.merkleRoot = MerkleTree.getMerkleRoot(chain.blocks, newBlock.getTransaction()); 
         newBlock.hash = Utils.hashSHA256(newBlock);
         boolean miner = PoW.miner(newBlock);
-        if(newBlock.getPrevHash() == chain.getLatest().getPrevHash())
+        if(newBlock.getPrevHash() == chain.getLatest().getPrevHash()) // ver lógica!!
             createNewChain(chain, newBlock);
         else
             chain.addCompletedBlock(newBlock);
@@ -53,11 +53,6 @@ public class Blockchain{
 
     public void createNewChain(Chain chain, Block newBlock){
         Chain newChain = new Chain();
-        for(Block block : chain.blocks){
-            if(block == chain.getLatest())
-                break;
-            newChain.addCompletedBlock(block);
-        }
         newChain.addCompletedBlock(newBlock);
         this.chains.add(newChain);
         
