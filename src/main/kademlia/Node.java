@@ -8,13 +8,9 @@ import main.Utils;
 
 public class Node{
     private final String nodeId;
-    private final String ip;
-    private final String port;
     private final KeyPair keyPair;
 
-    public Node(String ip, String port){
-        this.ip = ip;
-        this.port = port;
+    public Node(){
         this.keyPair = Utils.generateKeyPair();
         PublicKey publicKey = getPublicKey();
         this.nodeId = SKeyUtils.generateNodeId(publicKey);
@@ -22,13 +18,6 @@ public class Node{
     
     public String getNodeId() {
         return this.nodeId;
-    }
-
-    public String getIp() {
-        return this.ip;
-    }
-    public String getPort() {
-        return this.port;
     }
 
     public PublicKey getPublicKey() {

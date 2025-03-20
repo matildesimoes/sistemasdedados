@@ -53,11 +53,6 @@ public class Blockchain{
 
     public void createNewChain(Chain chain, Block newBlock){
         Chain newChain = new Chain();
-        for(Block block : chain.blocks){
-            if(block == chain.getLatest())
-                break;
-            newChain.addCompletedBlock(block);
-        }
         newChain.addCompletedBlock(newBlock);
         this.chains.add(newChain);
         

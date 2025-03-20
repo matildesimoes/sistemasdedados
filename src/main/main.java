@@ -39,7 +39,6 @@ public class main{
         Chain mainChain = blockchain.getChains().get(0);
         blockchain.addBlock(trans1.signature,mainChain);
 
-        blockchain.saveBlockchain();
 
     }
 }

@@ -28,9 +28,7 @@ public class MerkleTree{
                     String combined = tempHashes.get(i) + tempHashes.get(i + 1);
                     combinedHashes.add(Utils.hashSHA256(combined));
                 } else {
-                    // odd -> duplicate the last
-                    String combined = tempHashes.get(i) + tempHashes.get(i);
-                    combinedHashes.add(Utils.hashSHA256(combined));
+                    combinedHashes.add(tempHashes.get(i));
                 }
             }
             tempHashes = combinedHashes;
