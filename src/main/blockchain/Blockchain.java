@@ -25,14 +25,16 @@ public class Blockchain{
         this.chains = new ArrayList<>();
     }
 
-    public void addBlock(String transaction, Chain chain){
+    public void addBlock(List<Transaction> transactions, Chain chain){
         int nounce = 0;
-        String previousHash = chain.blocks.get(chain.size()-1).getHash();
-        Block newBlock = new Block(transaction,nounce,previousHash);
-        newBlock.merkleRoot = MerkleTree.getMerkleRoot(chain.blocks, newBlock.getTransaction()); 
-        newBlock.hash = Utils.hashSHA256(newBlock);
-        boolean miner = PoW.miner(newBlock);
-        if(newBlock.getPrevHash() == chain.getLatest().getPrevHash()) // ver lógica!!
+        BlockHeader prevBlockHeader = chain.getBlock(chain.size()-1).getBlockHeader();
+        Block newBlock = new Block(transactions, nounce, prevBlockHeader.getHash());
+
+        BlockHeader newBlockHeader = newBlock.getBlockHeader();
+        boolean miner = PoW.miner(newBlockHeader);
+
+        BlockHeader latestBlockHeader = chain.getLatest().getBlockHeader();
+        if(newBlockHeader.getPrevHash() == latestBlockHeader.getPrevHash()) 
             createNewChain(chain, newBlock);
         else
             chain.addCompletedBlock(newBlock);
@@ -42,18 +44,22 @@ public class Blockchain{
         Blockchain blockchain = new Blockchain();
 
         Chain genesisChain = new Chain();
-        Block genesisBlock = new Block(Utils.createRandomString((16)));  
-        genesisBlock.merkleRoot = MerkleTree.getMerkleRoot(genesisChain.blocks, genesisBlock.getTransaction());
-        genesisBlock.hash = Utils.hashSHA256(genesisBlock);
+        List<Transaction> transactions = new ArrayList<>();
+        Transaction trans = new Transaction(null,null, Utils.createRandomString(16));
+        transactions.add(trans);
+        Block genesisBlock = new Block(transactions);  
+
+        BlockHeader genesisBlockHeader = genesisBlock.getBlockHeader();
+        genesisBlockHeader.setHash(Utils.hashSHA256(genesisBlockHeader));
+
         genesisChain.addCompletedBlock(genesisBlock);
-        
         blockchain.chains.add(genesisChain);
         return blockchain;
     }
 
-    public void createNewChain(Chain chain, Block newBlock){
+    public void createNewChain(Chain chain, Block block){
         Chain newChain = new Chain();
-        newChain.addCompletedBlock(newBlock);
+        newChain.addCompletedBlock(block);
         this.chains.add(newChain);
         
     }

@@ -5,17 +5,13 @@ import java.util.List;
 import main.Utils;
 
 public class MerkleTree{
-    public static String getMerkleRoot(List<Block> blockchain, String currentTransaction){
-        if(blockchain == null || blockchain.isEmpty() && currentTransaction == null) return "";
+    public static String getMerkleRoot(List<Transaction> transactions){
+        if(transactions == null || transactions.isEmpty()) return "";
 
         List<String> tempHashes = new ArrayList<>();
-        for(Block block : blockchain){
-            String trans = block.getTransaction();
+        for(Transaction transaction : transactions){
+            String trans = transaction.signature;
             tempHashes.add(Utils.hashSHA256(trans));
-        }
-
-        if (currentTransaction != null && !currentTransaction.isEmpty()) {
-            tempHashes.add(Utils.hashSHA256(currentTransaction));
         }
 
         System.out.println("------------------") ;

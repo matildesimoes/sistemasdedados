@@ -4,10 +4,14 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class Chain{
-    public List<Block> blocks = new ArrayList<>();
+    private List<Block> blocks = new ArrayList<>();
 
     public void addCompletedBlock(Block b) { 
         blocks.add(b); 
+    }
+
+    public Block getBlock(int pos){
+        return this.blocks.get(pos);
     }
 
     public Block getLatest() { 

@@ -5,14 +5,15 @@ import main.Utils;
 public class PoW{
     private static final int DIFFICULTY = 2;
 
-    public static boolean miner(Block block){
-        String hash = block.getHash();
+    public static boolean miner(BlockHeader blockHeader){
+        blockHeader.setNounce(Utils.createRandomNumber(999999));
+        String hash = Utils.hashSHA256(blockHeader);
         String prefix = "0".repeat(DIFFICULTY);
         while(!hash.startsWith(prefix)){
-            block.nounce = Utils.createRandomNumber(999999);
-            hash = Utils.hashSHA256(block);
+            blockHeader.setNounce(Utils.createRandomNumber(999999));
+            hash = Utils.hashSHA256(blockHeader);
         }
-        block.hash = hash;
+        blockHeader.setHash(hash);
         return true;
     }
 }
