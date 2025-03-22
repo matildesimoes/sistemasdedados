@@ -4,8 +4,8 @@ import java.io.Serializable;
 import java.util.List;
 
 public class Block implements Serializable{
-    private List<Transaction> transactions;
     private BlockHeader blockHeader;
+    private List<Transaction> transactions;
     
     public Block(List<Transaction> transactions){
         this.transactions = transactions;

@@ -1,67 +1,109 @@
 {
   "blocks": [
     {
-      "transaction": "BE/davdBi1BXnU9JigmQ8A\u003d\u003d",
-      "nounce": 0,
-      "timestamp": "Mar 17, 2025, 10:53:26 AM",
-      "merkleRoot": "fdef483a89779ef337af1e2f85c75b8de3d248c6c6e40d32b3a260ca3826feb9",
-      "hash": "358eb6297313dd017506e5bc753752db0ef7b316f0364b5772bf34ccd02f96d8"
+      "blockHeader": {
+        "timestamp": "Mar 22, 2025, 4:04:34 PM",
+        "nounce": 0,
+        "hash": "d6d7c241e58661cc43faa67f2abec94f092fc1e5214fd7e9a1e8d5c5d6de8a97"
+      },
+      "transactions": []
     },
     {
-      "transaction": "D3cPvnCGAEE9Nx85THXH3Q5/1/0+/oNvQQFgOvM33BNBuboQ33IVysPQ5YveIuRmAFGs2w/m8yjH6x4P+QqBmxdgGo8/ea/8Ot8gX8xnIS6YVjko/iM52w077XW5iM63pIki9EpiXiU4+GSqg9nJNw89vxN4GlMETplCOYUSOM6clDTvMz/fKe5HO+cvTtEnjyqQApbBC1BvQD+IUAm2D5ShqzzC8Qxt6PSO7GZ8Q0y6OVEhJZodR1E+r+5JBNL6QIlo3G7W0ulSqj5PvuF2J2wbYp/2MiEhF78ZKZezCUm7H3pVOzxbypqG8NXq7eRzALuUkV3F8uxHjiQJNGjHcg\u003d\u003d",
-      "nounce": 523330,
-      "prevHash": "358eb6297313dd017506e5bc753752db0ef7b316f0364b5772bf34ccd02f96d8",
-      "timestamp": "Mar 17, 2025, 10:53:27 AM",
-      "merkleRoot": "7df963ae85f9129af0d771fbe5ee7ec0b9b86f2833b5d105265b7ce850eac8a4",
-      "hash": "0025b75a8fe23b5dedfb04e995b5169537a4136d24ed4043eee1e32522833ce7"
+      "blockHeader": {
+        "prevHash": "d6d7c241e58661cc43faa67f2abec94f092fc1e5214fd7e9a1e8d5c5d6de8a97",
+        "timestamp": "Mar 22, 2025, 4:04:35 PM",
+        "nounce": 9449,
+        "hash": "00cf87e0d64095b9cf6512a36feee653606a3d53bfd4b24945cc159477c66727"
+      },
+      "transactions": [
+        {
+          "buyer": {
+            "id": 223
+          },
+          "seller": {
+            "id": 224
+          },
+          "information": "ricardo",
+          "signature": "j33uFEsCkGPGf7H/yoNXb2ucNEiRlKBfXOelZrMZL+GDhlKXtJwDewt1Z03rhptlc1Fzpm97K/l8uGI6WUYdfJvpTt6/cm/mIig/XMWZ9xT8uPHNiMsKJ5Pf1taHWULpZH55rHNOccdNUy5fVQE3ds601HDaLz9C+gCYYJK02+c0fR8nh14NL0xKksdV3+Fn99uErkbUYw4Gln7rG6fI+wfsWOq1FWJHZOuLChNi3/iV7Gitc+8GeQ+CEv/X3Et61DP7MO/rnFQEICJ/NLEmbdE0uGUuWQH5inUWMWesfAcMDinRTTNhlIUS9AAwbKXFVlY6kL4byBls6hpDLwcsaA\u003d\u003d",
+          "timestamp": "Mar 22, 2025, 4:04:35 PM"
+        },
+        {
+          "buyer": {
+            "id": 226
+          },
+          "seller": {
+            "id": 225
+          },
+          "information": "maria",
+          "signature": "sLjMKBJ8gkp/ZFAqXuNjj7CYpwvCebwnSVuS5kuZ3NawZWhpgpfuWYROzNiVHcMUdOWdJeqGaUeRE19MJ0aua13mat6sTXWrmkj8CukbEawnnNgK5DyQoy3+ETEnnfosKYCh5mvgZEEXudWjpqS0HzYDWSnU4UHa1i1FwCui0Lftk2Ap4JuwPRccehbxCSTPpBbfqp889UQRGpMr+ZSXhJ46Wy38608g18M7T5XElUAgSk7ZEgGWnbDr5KCH05SvyPMLbEnwbW7v3W4tZs/RECew3885IcmRlzKf7X1+aplMHrWnQXVvRfFSXM4j1u1YRYXHgkulFhIXv1LJuCSK3g\u003d\u003d",
+          "timestamp": "Mar 22, 2025, 4:04:35 PM"
+        },
+        {
+          "buyer": {
+            "id": 225
+          },
+          "seller": {
+            "id": 223
+          },
+          "information": "matilde",
+          "signature": "SsSAJzJW92xwcJ0rDqWATEtwW/HSdQ858kTMByPhk4goVro4+AFVV974O0O7UBfQ6ptvu7dByYGrcQUsO0vHvdawQZXTe7vTPzi20a+C1mbrNcgvE2aeLyuZ50A7u1N1jP0kcOy4ebS7wrgXKdFDe1gdfhAAFRKkVx7XjNmprQgM5ffjlU24j/nI8E0KTK/4mf4yDS3YC2ixS+MyHh/DbnIiVA3yoqGgF8rlQg6MRp/Y8JyQnWv+y9Jv/NIfUNaTy6pM225FCZ1Rf4l3AmXbEEAI7yrKYrfDj8B063KS8REIq9n2yq/VgxbTf9wlAXbSCovgGukSSRIdf2GItVMLmw\u003d\u003d",
+          "timestamp": "Mar 22, 2025, 4:04:35 PM"
+        }
+      ]
     },
     {
-      "transaction": "D+E/FLXucrr21UuiCD/LmO3b7OxTjZ+/tBd2o1hPfRhVwyhvUsa0+M95cnWi+TTRY44ZXP20WXYTY0Tfqbgphn30rQpYoH8tMrEpwQ3Y5l0/FEU5HCgBMnsCKzdpWA8XsxjpBN0sdAj7W69tqdDf/XRJglxC3k8LkkXnLiDDXP/Bx7WoiIt4JQ8cJZfZkOKVXSBAku5vLf6ROe0mfJ+8pcIgxArFbZOoqky33UcsoKNXjngACXVq6tni/W8FVwRa2l2gnvfj4BPceKbAbd/hUmXmx+CBlvQkR/K15y/0GwOPlawrFyGUzoxazMA6QQJA1FQNbZmqTVR5uAu76lN6xQ\u003d\u003d",
-      "nounce": 145449,
-      "prevHash": "0025b75a8fe23b5dedfb04e995b5169537a4136d24ed4043eee1e32522833ce7",
-      "timestamp": "Mar 17, 2025, 10:53:27 AM",
-      "merkleRoot": "129e5a9f2ba9a336b45779bfeb86f270cacbc5b7ae185def1bbb99145541f3f2",
-      "hash": "000662f81e9584a6bc3e984bab79f9901ddce3e24abd69e2df4b358488b63dc7"
-    },
-    {
-      "transaction": "Noovgg6gdic3swZtnDFFy9rK1DudVx6o0yOv61QgwgiEBYj1RF6+3WFt6SXZSkTHJEEUk3Qvt8jq3q/1QyIZK3SBKHL5IP9r+8kCPemaNf46/ew0JkBJ1L7S76HgPcKaP0UkyYGKVR6H93nlyppbYTD/pP08qTbgVZUuwkFEHsrkjj5SP9qn/8p7jyr/9kCVdAWs7i6lhxmYpdU/+oGHcjwXWZtT71iHWf2VkB/HWmdlPT5anSDsy1DTamcf7kPt11UefEOLzJ8P5WFwqqOh8QRfq52hRXRFxbxgbC/C7JLPcQyFvtPE2gubhxyY0IxPZ19BPJdWScsN36dVForcbQ\u003d\u003d",
-      "nounce": 566621,
-      "prevHash": "000662f81e9584a6bc3e984bab79f9901ddce3e24abd69e2df4b358488b63dc7",
-      "timestamp": "Mar 17, 2025, 10:53:27 AM",
-      "merkleRoot": "b8f94132b2558d691b36f5b02a3988ca846a2c2c104f1a02f176b12f41f1101d",
-      "hash": "002bfd1fbdeb07a480616baa98ec1527d395f3e6ec24128a3a114b524c76da81"
-    },
-    {
-      "transaction": "H1fndfyRMK3r1fxA6BpabJJXhax7Oa36g8/YUP8AIMsJIyOp45m8alS2L2nogskjNWDfzDUbFdsfo991Ahpe8rcp21FrtPdJwUodOLqBL42VPy3MLapgMKUMvILKXaVl8ssAMMLQRaPGaO1VGqMDgKwSnsRY3MFPqOSos8wDDOMba5f+qJth76r/rx1cU7jAPyWCJZL5UKyVa2emqQ1demj6IaU5Xg/GaHPkhXkF2hDf9zv0ILc8OGHWBVB+TEw0/gddszfFfroXczvut8ezmXxR2bG7WXWbhK0tnTPOee0PAcQzhSyCc7m/UBzDBJMRUpZLRkyoEHKChRIAVvAd/Q\u003d\u003d",
-      "nounce": 573828,
-      "prevHash": "002bfd1fbdeb07a480616baa98ec1527d395f3e6ec24128a3a114b524c76da81",
-      "timestamp": "Mar 18, 2025, 6:30:17 PM",
-      "merkleRoot": "fd149bb7dcc30a3e042d22b3ba7905d5c51f073f1f41e230cee36fa6a13e70ab",
-      "hash": "00aacaa57c38d7f560f12388238fe6a0d947182425f2428e81be65c111390e41"
-    },
-    {
-      "transaction": "P+PF9f/s2svwqc2AV0iIX/I6LMCqRNZCfEViq6R/kv+deSMaR1TV8RBtz4wEzyltUS3DwF/5c4utJM47OGENBIaVfARW9RBmCLyxge7cQ7rQE1A7vMDirOLy6eQzU4ZwTaQNVsAVmzeqWg1X2nYHif3R8ebPuqzfdUfEeGYgErN9rKUdYen5Ezu0KCtUxeQP0zx87PHHb2q6n5RGFrrJhqKL8R8y08vZrBi8AGoucZ13LbZRTg2svPkD+dfgYHA00wMEOP4DYVBWTpI1fWIfXfW2LUXWwHLlsPoDERWXpZ57NaE3rP4CyT7i/Z/RpBYpxwW9CR2+ViSwm/dSN50S/w\u003d\u003d",
-      "nounce": 59262,
-      "prevHash": "00aacaa57c38d7f560f12388238fe6a0d947182425f2428e81be65c111390e41",
-      "timestamp": "Mar 20, 2025, 4:58:22 PM",
-      "merkleRoot": "789b017def9a0d848d166a860587136d59fc4dfb598b185ea666085d041deb03",
-      "hash": "00a3b6abe1ce25cf7d338bd647b65d5aa877848aec731b8396201f5a88a932d0"
-    },
-    {
-      "transaction": "on8i0oNrcMEJgP+6JQvjwKQUB2WkC/QPkPwIhgk5UXL1uBgvPxgBfP70o/Yxt1W0hhK73hvDYA2fr8iF4wXouCWS6nh/IvqkMNl80yqVNOvjqU5AGSRPSjHaWJ7YsyXhAOtMmtwL1ArBgiyBZAmmreqgmerWP7bn8qhvKF6DmzYjwsLcpXodm4ZSvq2LRbncIUXikA0Ef59hJ8FRlmhMJTBCfcmw/0IjJMTUOwmNoGlsG2GzwPGMcNV31KqZscO+K/8F6A2aHWJvUeWT08vWevkkxB60I/GZ458G3KzZrvlPv54yksWYhiRp6X6/B3ALJWa07/lIdvUzD5+PPHVUIw\u003d\u003d",
-      "nounce": 829262,
-      "prevHash": "00a3b6abe1ce25cf7d338bd647b65d5aa877848aec731b8396201f5a88a932d0",
-      "timestamp": "Mar 20, 2025, 5:00:46 PM",
-      "merkleRoot": "340aab04b1e5bddda78a2b71a032419ca386c57607ec4be5f692ab87de0eca54",
-      "hash": "0082eae849465537de523613eb8c4a8e20b57f14fb79759bfe778505855cb49c"
-    },
-    {
-      "transaction": "vwxbBVouQl0qaJF3+aEqkhDuYGNpPE9tYV+c3SSXEDwQNgLTWD67aGTiJZTjmgx44IJIW4+idq6R7WFneFHiGm5cF5+SpP0lesjQMy5EODkWdh6frs7WgqgsPJg7Of4aDRtkdozGWCqD7GOZxVhSo7lt5i3JgHWHyv7UXmk+9aR1mmtu9NM70RkBOsw6VXj0FSSCiForsiUQMjRQ3e2GTSiCFVGROM/kjrKvLXuJleGC0esc7Z0vtWP+tdkqObnEwYAKXs+COA0a1hrgaWrgdzYSskLQ7Re+Sarbi6hXkoAdV/gBIlunLhyL2GqEwJG1cg3OAFA7HpAp/YjWbue+Yg\u003d\u003d",
-      "nounce": 227212,
-      "prevHash": "0082eae849465537de523613eb8c4a8e20b57f14fb79759bfe778505855cb49c",
-      "timestamp": "Mar 20, 2025, 5:00:48 PM",
-      "merkleRoot": "4870ec26c8ce12c6c56a909cba749be60dffa3d5c211274df93ba67711eacd55",
-      "hash": "00d4ff185637d5c37e7e7d38a8f9fcfb518081c70ae8e9fbc87e15647e208680"
+      "blockHeader": {
+        "prevHash": "00cf87e0d64095b9cf6512a36feee653606a3d53bfd4b24945cc159477c66727",
+        "timestamp": "Mar 22, 2025, 4:04:35 PM",
+        "nounce": 289435,
+        "hash": "00a78c70abeda26ef9c2ece252d626184f1b13b610103c40e058a2a5c3533d01"
+      },
+      "transactions": [
+        {
+          "buyer": {
+            "id": 223
+          },
+          "seller": {
+            "id": 224
+          },
+          "information": "ricardo",
+          "signature": "j33uFEsCkGPGf7H/yoNXb2ucNEiRlKBfXOelZrMZL+GDhlKXtJwDewt1Z03rhptlc1Fzpm97K/l8uGI6WUYdfJvpTt6/cm/mIig/XMWZ9xT8uPHNiMsKJ5Pf1taHWULpZH55rHNOccdNUy5fVQE3ds601HDaLz9C+gCYYJK02+c0fR8nh14NL0xKksdV3+Fn99uErkbUYw4Gln7rG6fI+wfsWOq1FWJHZOuLChNi3/iV7Gitc+8GeQ+CEv/X3Et61DP7MO/rnFQEICJ/NLEmbdE0uGUuWQH5inUWMWesfAcMDinRTTNhlIUS9AAwbKXFVlY6kL4byBls6hpDLwcsaA\u003d\u003d",
+          "timestamp": "Mar 22, 2025, 4:04:35 PM"
+        },
+        {
+          "buyer": {
+            "id": 226
+          },
+          "seller": {
+            "id": 225
+          },
+          "information": "maria",
+          "signature": "sLjMKBJ8gkp/ZFAqXuNjj7CYpwvCebwnSVuS5kuZ3NawZWhpgpfuWYROzNiVHcMUdOWdJeqGaUeRE19MJ0aua13mat6sTXWrmkj8CukbEawnnNgK5DyQoy3+ETEnnfosKYCh5mvgZEEXudWjpqS0HzYDWSnU4UHa1i1FwCui0Lftk2Ap4JuwPRccehbxCSTPpBbfqp889UQRGpMr+ZSXhJ46Wy38608g18M7T5XElUAgSk7ZEgGWnbDr5KCH05SvyPMLbEnwbW7v3W4tZs/RECew3885IcmRlzKf7X1+aplMHrWnQXVvRfFSXM4j1u1YRYXHgkulFhIXv1LJuCSK3g\u003d\u003d",
+          "timestamp": "Mar 22, 2025, 4:04:35 PM"
+        },
+        {
+          "buyer": {
+            "id": 225
+          },
+          "seller": {
+            "id": 223
+          },
+          "information": "matilde",
+          "signature": "SsSAJzJW92xwcJ0rDqWATEtwW/HSdQ858kTMByPhk4goVro4+AFVV974O0O7UBfQ6ptvu7dByYGrcQUsO0vHvdawQZXTe7vTPzi20a+C1mbrNcgvE2aeLyuZ50A7u1N1jP0kcOy4ebS7wrgXKdFDe1gdfhAAFRKkVx7XjNmprQgM5ffjlU24j/nI8E0KTK/4mf4yDS3YC2ixS+MyHh/DbnIiVA3yoqGgF8rlQg6MRp/Y8JyQnWv+y9Jv/NIfUNaTy6pM225FCZ1Rf4l3AmXbEEAI7yrKYrfDj8B063KS8REIq9n2yq/VgxbTf9wlAXbSCovgGukSSRIdf2GItVMLmw\u003d\u003d",
+          "timestamp": "Mar 22, 2025, 4:04:35 PM"
+        },
+        {
+          "buyer": {
+            "id": 233
+          },
+          "seller": {
+            "id": 234
+          },
+          "information": "ricardo",
+          "signature": "EFcJ4AWNnDovBloUJamQRjsNZq/GbfoFyXvkFFie268nV35blXbqFDvXbWE7l5TOR7So9CsJAeHV6gzGkflm1eFseOf6FgsP/PFbbkTiRlesMT/ptg6ROPccizWfGv4Q9gP0Sw39HV6Fplu9yLW2FmDJGW9IHPdqvPRit/uiyiv+6sBySUsy4IoHiROLOSrStCAP97kx8MwEr8UrJ+6saraD+Pmy8RkfbdLuXuzKDDLGtfumX255fIUCIrcqkMmnRk6htDwIL80B4RNtnxrtJNc9qIZLiqqLTrAeL8UdUwIPIvsn8yChiqy21AYXWHCkIQiPmFxRZOjXGTwALMDRoA\u003d\u003d",
+          "timestamp": "Mar 22, 2025, 4:04:35 PM"
+        }
+      ]
     }
   ]
 }

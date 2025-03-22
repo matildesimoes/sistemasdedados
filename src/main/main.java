@@ -3,11 +3,12 @@ package main;
 import java.util.Scanner;
 import main.blockchain.*;
 import main.auctions.*;
-
+import java.util.List;
+import java.util.ArrayList;
 
 public class main{
 
-    public static void createTestBlockchain(Blockchain blockchain) {
+    public static void createTestBlockchain(Blockchain blockchain, List<Transaction> trans) {
         User user1 = new User();
         User user2 = new User();
         User user3 = new User();
@@ -17,11 +18,13 @@ public class main{
         Transaction trans2 = new Transaction(user4, user3, "maria");
         Transaction trans3 = new Transaction(user3, user1, "matilde");
 
+        trans.add(trans1);
+        trans.add(trans2);
+        trans.add(trans3);
+
         Chain mainChain = blockchain.getChains().get(0);
 
-        blockchain.addBlock(trans1.signature, mainChain);
-        blockchain.addBlock(trans2.signature, mainChain);
-        blockchain.addBlock(trans3.signature, mainChain);
+        blockchain.addBlock(trans, mainChain);
 
         blockchain.saveBlockchain();
     }
@@ -29,7 +32,8 @@ public class main{
     public static void main(String[] args){
 
        //Blockchain blockchain = Blockchain.createNewBlockchain(); 
-       //createTestBlockchain(blockchain);
+        List<Transaction> trans = new ArrayList<>();
+       //createTestBlockchain(blockchain,trans);
 
        Blockchain blockchain = Blockchain.loadBlockchain();
         User user3 = new User();
@@ -37,8 +41,10 @@ public class main{
 
         Transaction trans1 = new Transaction(user3, user4, "ricardo");
         Chain mainChain = blockchain.getChains().get(0);
-        blockchain.addBlock(trans1.signature,mainChain);
+        trans.add(trans1);
+        blockchain.addBlock(trans,mainChain);
 
+        blockchain.saveBlockchain();
 
     }
 }

@@ -35,7 +35,7 @@ public class Blockchain{
 
         BlockHeader latestBlockHeader = chain.getLatest().getBlockHeader();
         if(newBlockHeader.getPrevHash() == latestBlockHeader.getPrevHash()) 
-            createNewChain(chain, newBlock);
+            createNewChain(newBlock);
         else
             chain.addCompletedBlock(newBlock);
     }
@@ -45,8 +45,7 @@ public class Blockchain{
 
         Chain genesisChain = new Chain();
         List<Transaction> transactions = new ArrayList<>();
-        Transaction trans = new Transaction(null,null, Utils.createRandomString(16));
-        transactions.add(trans);
+
         Block genesisBlock = new Block(transactions);  
 
         BlockHeader genesisBlockHeader = genesisBlock.getBlockHeader();
@@ -57,11 +56,15 @@ public class Blockchain{
         return blockchain;
     }
 
-    public void createNewChain(Chain chain, Block block){
+    public void createNewChain(Block block){
         Chain newChain = new Chain();
         newChain.addCompletedBlock(block);
         this.chains.add(newChain);
         
+    }
+
+    public void deleteChain(){
+
     }
 
     public void saveBlockchain() {

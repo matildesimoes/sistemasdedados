@@ -16,7 +16,7 @@ import main.Utils;
 public class User implements Serializable{
     private static final String COUNTER_FILE = "data/userId_counter.txt";
     protected int id;
-    protected KeyPair keyPair;
+    protected transient KeyPair keyPair;
 
     public User(){
         this.id = getNextId();
