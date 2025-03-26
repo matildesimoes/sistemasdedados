@@ -31,10 +31,10 @@ public class main{
 
         blockchain.saveBlockchain();
     }
-        */
+    */
 
     public static void createNode(String bootstrapIp){
-        String savePath = "InfoNode";
+        String savePath = "data/Node";
 
         InfoNode node = new InfoNode(Node.Type.BOOTSTRAP,"127.0.0.1", 5001, List.of("192.168.1.10:5000"));
         try {
@@ -70,6 +70,7 @@ public class main{
 
         Scanner in = new Scanner(System.in);
 
+        if(bootstrapIp != null)
             createNode(bootstrapIp);
             
 
