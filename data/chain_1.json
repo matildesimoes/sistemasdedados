@@ -104,6 +104,27 @@
           "timestamp": "Mar 22, 2025, 4:04:35 PM"
         }
       ]
+    },
+    {
+      "blockHeader": {
+        "prevHash": "00a78c70abeda26ef9c2ece252d626184f1b13b610103c40e058a2a5c3533d01",
+        "timestamp": "Mar 26, 2025, 9:57:50 AM",
+        "nounce": 386,
+        "hash": "004bc434e3e9c77e442e11875538042c8a79f9bc831193c38b75302c22f40b6a"
+      },
+      "transactions": [
+        {
+          "buyer": {
+            "id": 249
+          },
+          "seller": {
+            "id": 250
+          },
+          "information": "ricardo",
+          "signature": "GYkmXxMgDgusCdyQopOzaBHaXGZzQWBN3lXHULzINc9tbqVCsmq3fL1fWZ+UgnVf5MyEL7re+jNeKI9p8HrEN9Kw578M3Ue9vKVlLIP5q6ub4swwLUS6+Fx9X6fiQflhB9X/OAjKnM6gohd6/r83ZRsSIEcIAuf7JXoUn1Eba/FrqBPexujpW+hYyJnqnUFdLjpj4Kuescgkz2u5YSgW5MMKk/qwproeLcj5ZS6GQffG8DkfEQMc3OgIbWzF1Hlg8buI+LPerNV8pfpvy2/LXnqKkv7XOxp6OiryEbVqNFLg9rjX2qybUmUmDykfiHiaar/0nbISQIDq0Psjtgl+Dg\u003d\u003d",
+          "timestamp": "Mar 26, 2025, 9:57:50 AM"
+        }
+      ]
     }
   ]
 }
