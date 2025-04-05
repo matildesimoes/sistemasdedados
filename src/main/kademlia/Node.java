@@ -5,10 +5,12 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.io.Serializable;
+
 
 import main.Utils;
 
-public class Node{
+public class Node implements Serializable{
     private final String nodeId;
     private final String ip;
     private final int port;

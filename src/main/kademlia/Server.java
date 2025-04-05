@@ -4,12 +4,14 @@ import java.io.*;
 import java.net.*;
 import java.security.PublicKey;
 import java.util.concurrent.*;
+import java.io.Serializable;
+
 
 import main.Utils;
 
 
 
-public class Server{
+public class Server implements Serializable{
     private final String ip;
     private final int port;
     private final RoutingTable routingTable; 

@@ -3,8 +3,9 @@ package main.kademlia;
 import java.util.List;
 import java.util.ArrayList;
 import java.math.BigInteger;
+import java.io.Serializable;
 
-public class RoutingTable {
+public class RoutingTable implements Serializable{
     private final List<Bucket> buckets;
     private final String selfNodeId;
 
