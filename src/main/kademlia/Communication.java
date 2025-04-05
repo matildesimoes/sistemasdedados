@@ -11,9 +11,9 @@ public class Communication implements Serializable {
 
     private final MessageType type;
     private final String information;
-    private final User sender;
+    private final Node sender;
 
-    public Communication(MessageType type, String information, User sender, User recevier) {
+    public Communication(MessageType type, String information, Node sender, Node recevier) {
         this.type = type;
         this.information = information;
         this.sender = sender;
@@ -27,7 +27,7 @@ public class Communication implements Serializable {
         return this.information;
     }
 
-    public User getSender() {
+    public Node getSender() {
         return this.sender;
     }
 

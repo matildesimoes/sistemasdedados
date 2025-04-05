@@ -10,12 +10,16 @@ import main.Utils;
 
 
 public class Server{
+    private final String ip;
     private final int port;
     private final RoutingTable routingTable; 
+    private final Node selfNode;
 
-    public Server(int port, RoutingTable routingTable){
+    public Server(String ip, int port, RoutingTable routingTable, Node selfNode){
+        this.ip = ip;
         this.port = port;
         this.routingTable = routingTable;
+        this.selfNode = selfNode;
     }
     
     public void start(){
@@ -39,10 +43,21 @@ public class Server{
             ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream())
         ) {
             Communication msg = (Communication) input.readObject();
+            Node sender = msg.getSender();
+            
+            switch(msg.getType()){
+                case PING: 
+                    if(!this.routingTable.nodeExist(sender)){
+                        int challenge = Utils.createRandomNumber(16);
+                        
+                        Communication newMsg = new Communication(Communication.MessageType.PING, String.valueOf(challenge), this.selfNode, sender);
+                        output.writeObject(newMsg);
+                        output.flush();
+                    }else{
+                        System.out.println("PING Received");
+                    }
+            }
 
-
-            // Response
-           // output.writeObject(new Communication(Communication.MessageType.ACK,null,));
 
         } catch (Exception e) {
             e.printStackTrace();

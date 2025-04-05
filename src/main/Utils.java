@@ -58,7 +58,7 @@ public class Utils{
 
     public static String publicKeySignature(PublicKey publicKey) {
         try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            MessageDigest digest = MessageDigest.getInstance("SHA-1");
             byte[] hash = digest.digest(publicKey.getEncoded());
             return Base64.getEncoder().encodeToString(hash);
         } catch (Exception e) {

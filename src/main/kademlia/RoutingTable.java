@@ -1,34 +1,59 @@
 package main.kademlia;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.Comparator;
+import java.util.List;
+import java.util.ArrayList;
+import java.math.BigInteger;
 
 public class RoutingTable {
-    private final Map<String, Node> buckets = new ConcurrentHashMap<>();
+    private final List<Bucket> buckets;
+    private final String selfNodeId;
 
-    public void addNode(Node node) {
-        buckets.putIfAbsent(node.getNodeId(), node);
+    public RoutingTable(String selfNodeId) {
+        this.selfNodeId = selfNodeId;
+        this.buckets = new ArrayList<>();
+
     }
 
-    public Node findClosest(String targetId) {
-        return buckets.values().stream()
-            .min(Comparator.comparing(n -> distance(n.getNodeId(), targetId)))
-            .orElse(null);
+    public void addBucket(Bucket bucket){
+        this.buckets.add(bucket);
     }
 
-    public static int distance(String src, String dst) {
+
+    public boolean nodeExist(Node node){
+        String nodeId = node.getNodeId();
+
+        BigInteger distance = distance(this.selfNodeId, nodeId); 
+        int range = distance.bitLength() - 1;
+
+        for(Bucket b : buckets){
+            if(b.getRange() == range){
+                List<Node> nodes = b.getNodes();
+
+                for(Node n : nodes){
+                    if(n.getNodeId() == nodeId)
+                        return true;
+                }
+                break;
+            }
+        }
+
+        return false;
+
+    }
+
+
+    public static BigInteger distance(String src, String dst) {
         if (src.length() != dst.length()) {
             throw new IllegalArgumentException("Both arrays must be the same length.");
         }
         byte[] a = hexToBytes(src);
         byte[] b = hexToBytes(dst);
 
-        int result = 0;
+        byte[] result = new byte[a.length];
         for (int i = 0; i < Math.min(a.length, b.length); i++) {
-            result += (a[i] ^ b[i]);
+            result[i] += (a[i] ^ b[i]);
         }
-        return result;
+        return new BigInteger(1, result);
     }
 
     public static byte[] hexToBytes(String hex) {

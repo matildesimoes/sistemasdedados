@@ -33,16 +33,32 @@ public class main{
     }
     */
 
-    public static void createNode(String bootstrapIp){
-        String savePath = "data/Node";
+    public static void createNode(String bootstrapAddress, String ip, int port){
+        Node node = new Node(ip,port); 
+        Client client = new Client();
 
-        InfoNode node = new InfoNode(Node.Type.BOOTSTRAP,"127.0.0.1", 5001, List.of("192.168.1.10:5000"));
-        try {
-            node.save(savePath);
-        } catch (Exception e) {
-            e.printStackTrace();
+        String[] parts = bootstrapAddress.split(":");
+        String bootstrapIp = parts[0];
+        int bootstrapPort = Integer.parseInt(parts[1]);
+
+        Node bootstrapNode = new Node(bootstrapIp,bootstrapPort);
+
+        Communication ping = new Communication(
+            Communication.MessageType.PING,
+            "join?",
+            node,
+            bootstrapNode
+        );
+
+        Communication response = client.sendMessage(bootstrapNode, ping);
+
+        if (response == null) {
+            System.out.println("No response from bootstrap node.");
+            return;
         }
-        
+
+
+
     }
 
     public static void main(String[] args){
@@ -63,15 +79,22 @@ public class main{
 
         blockchain.saveBlockchain();
         */
+
+        if (args.length < 1) {
+            System.out.println("Usage: ./run.sh <myIp:myPort> <bootstrapIP:bootstrapPort>");
+            return;
+        }
     
-        int port = Integer.parseInt(args[0]);
-        String bootstrapIp = args.length == 2 ? args[1] : null;
+        String[] parts = args[0].split(":");
+        String ip = parts[0];
+        int port = Integer.parseInt(parts[1]);
+        String bootstrapAddress = args.length == 3 ? args[1] : null;
 
 
         Scanner in = new Scanner(System.in);
 
-        if(bootstrapIp != null)
-            createNode(bootstrapIp);
+        if(bootstrapAddress != null)
+            createNode(bootstrapAddress, ip, port);
             
 
         while (true) {
@@ -83,7 +106,7 @@ public class main{
             System.out.println("3. Mine new block (PoW)");
             System.out.println("4. Gossip latest transaction");
             System.out.println("5. View connected peers");
-            System.out.println("6. Exit");
+            System.out.println("0. Exit");
             System.out.print("\nChoose an option: ");
 
             String option = in.nextLine().trim();
@@ -101,7 +124,7 @@ public class main{
                     break;
                 case "5":
                     break;
-                case "6":
+                case "0":
                     System.out.println("Shutting down...");
                     System.exit(0);
                     break;
