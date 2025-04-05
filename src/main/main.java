@@ -33,8 +33,7 @@ public class main{
     }
     */
 
-    public static void createNode(String bootstrapAddress, String ip, int port){
-        Node node = new Node(ip,port); 
+    public static void createNode(String bootstrapAddress, Node node){
         Client client = new Client();
 
         String[] parts = bootstrapAddress.split(":");
@@ -52,12 +51,11 @@ public class main{
 
         Communication response = client.sendMessage(bootstrapNode, ping);
 
+
         if (response == null) {
             System.out.println("No response from bootstrap node.");
             return;
         }
-
-
 
     }
 
@@ -88,13 +86,21 @@ public class main{
         String[] parts = args[0].split(":");
         String ip = parts[0];
         int port = Integer.parseInt(parts[1]);
-        String bootstrapAddress = args.length == 3 ? args[1] : null;
+        String bootstrapAddress = args.length == 2 ? args[1] : null;
 
+        Node node = new Node(ip, port);
+        RoutingTable routingTable = new RoutingTable(node.getNodeId());
+        Server server = new Server(ip, port, routingTable, node);
+
+        new Thread(server::start).start();
+
+        System.out.println("Node started at " + ip + ":" + port);
+
+        if(bootstrapAddress != null)
+        createNode(bootstrapAddress, node);
 
         Scanner in = new Scanner(System.in);
 
-        if(bootstrapAddress != null)
-            createNode(bootstrapAddress, ip, port);
             
 
         while (true) {

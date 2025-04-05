@@ -2,4 +2,4 @@
 
 JAR_PATH="lib/gson-2.12.1.jar"
 
-java -cp "out:$JAR_PATH" main.main $1
+java -cp "out:$JAR_PATH" main.main "$@"
