@@ -57,6 +57,15 @@ public class RoutingTable implements Serializable{
         }
     }
 
+    public void removeNode(String nodeId){
+        for (Bucket b : this.buckets) {
+            List<String[]> nodes = b.getNodes();
+            nodes.removeIf(node -> node[2].equals(nodeId));
+        }
+    }
+
+
+
 
     public static BigInteger distance(String src, String dst) {
         if (src.length() != dst.length()) {

@@ -45,6 +45,8 @@ public class Server implements Serializable{
         ) {
             Communication msg = (Communication) input.readObject();
             Node sender = msg.getSender();
+            String response = "";
+            Communication newMsg = null;
             
             switch(msg.getType()){
                 case PING: 
@@ -52,32 +54,34 @@ public class Server implements Serializable{
                         int challenge = Utils.createRandomNumber(16);
                         pendingChallenges.put(sender.getNodeId(), challenge);
                         
-                        Communication newMsg = new Communication(Communication.MessageType.ACK, String.valueOf(challenge), this.selfNode, sender);
+                        newMsg = new Communication(Communication.MessageType.ACK, String.valueOf(challenge), this.selfNode, sender);
                         output.writeObject(newMsg);
                         output.flush();
                     }else{
-                        System.out.println("PING Received");
+                        response = "PING Received.";
+                        System.out.println(response);            
+                        newMsg = new Communication(Communication.MessageType.ACK, response, this.selfNode, sender);
+                        output.writeObject(newMsg);
+                        break; 
                     }
                     break;
                 case CHALLENGE: 
                     int challenge = pendingChallenges.get(sender.getNodeId());
                     String string = sender.getNodeId() + challenge + msg.getInformation();
                     String validateHash = Utils.hashSHA256(string);
-
-                    
-
                     String prefix = "0".repeat(Utils.CHALLENGE_DIFFICULTY); 
+
                     if(!validateHash.startsWith(prefix)){
-                        String response = "Wrong challenge response.";
+                        response = "Wrong challenge response.";
                         System.out.println(response);            
-                        Communication newMsg = new Communication(Communication.MessageType.NACK, response, this.selfNode, sender);
+                        newMsg = new Communication(Communication.MessageType.NACK, response, this.selfNode, sender);
                         output.writeObject(newMsg);
                         break;
                     }
                     
-                    String response = "CHALLENGE completed.";
+                    response = "CHALLENGE completed.";
                     System.out.println(response);            
-                    Communication newMsg = new Communication(Communication.MessageType.ACK, response, this.selfNode, sender);
+                    newMsg = new Communication(Communication.MessageType.ACK, response, this.selfNode, sender);
                     output.writeObject(newMsg);
                     break; 
                 case FIND_NODE:

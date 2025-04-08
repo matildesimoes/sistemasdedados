@@ -17,8 +17,8 @@ public class Node implements Serializable{
     private final KeyPair keyPair;
     private final Server server;
     private final RoutingTable routingTable;
-    private final Timestamp timeAlive;
-    private final Timestamp latestPing;
+    private Timestamp timeAlive;
+    private Timestamp latestPing;
 
 
     public enum Type {
@@ -36,7 +36,7 @@ public class Node implements Serializable{
         this.routingTable = new RoutingTable(this.nodeId);
         this.server = new Server(ip,port, this.routingTable, this);
 
-        this.timeAlive = Timestamp.from(Instant.now());
+        this.timeAlive = null;
         this.latestPing = null;
     }
     
@@ -69,9 +69,17 @@ public class Node implements Serializable{
     public Timestamp getTimeAlive(){
         return this.timeAlive;
     }
+    
+    public void setTimeAlive(Timestamp timestamp){
+        this.timeAlive = timestamp;
+    }
 
     public Timestamp getLatestPing(){
         return this.latestPing;
+    }
+
+    public void setLatestPing(Timestamp timestamp){
+        this.latestPing = timestamp;
     }
 
 }
