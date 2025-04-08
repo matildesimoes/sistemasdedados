@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.ArrayList;
 import java.math.BigInteger;
 import java.io.Serializable;
+import java.util.PriorityQueue;
+import java.util.Comparator;
+
 
 public class RoutingTable implements Serializable{
     private final List<Bucket> buckets;
@@ -28,10 +31,10 @@ public class RoutingTable implements Serializable{
 
         for(Bucket b : buckets){
             if(b.getRange() == range){
-                List<Node> nodes = b.getNodes();
+                List<String[]> nodes = b.getNodes();
 
-                for(Node n : nodes){
-                    if(n.getNodeId() == nodeId)
+                for(String[] n : nodes){
+                    if(n[2] == nodeId)
                         return true;
                 }
                 break;
@@ -67,5 +70,20 @@ public class RoutingTable implements Serializable{
         return result;
     }
 
+    public List<String[]> findClosest(String targetId, int k){
+        PriorityQueue<String[]> pq = new PriorityQueue<>(Comparator.comparing(n -> distance(n[2], targetId)));
+        for (Bucket b : buckets) {
+            for (String[] n : b.getNodes()) {
+                pq.offer(n);
+            }
+        }
+        
+        List<String[]> result = new ArrayList<>();
+        while (!pq.isEmpty() && result.size() < k) {
+            result.add(pq.poll());
+        }
+
+        return result;
+    }
 }
 

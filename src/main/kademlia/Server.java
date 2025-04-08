@@ -5,6 +5,7 @@ import java.net.*;
 import java.security.PublicKey;
 import java.util.concurrent.*;
 import java.io.Serializable;
+import java.util.List;
 
 import main.Utils;
 
@@ -78,9 +79,13 @@ public class Server implements Serializable{
                     System.out.println(response);            
                     Communication newMsg = new Communication(Communication.MessageType.ACK, response, this.selfNode, sender);
                     output.writeObject(newMsg);
-                    
-
                     break; 
+                case FIND_NODE:
+                    String[] nodeContact = msg.getInformation().split(",");
+
+                    List<String[]> closest = routingTable.findClosest(sender.getNodeId(), Utils.BUCKET_SIZE);       
+                    this.selfNode.setRoutingTable();
+                    break;
                 default:
                     System.out.println("Unknown message Type.");            
                     break;

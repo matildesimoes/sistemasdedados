@@ -81,7 +81,30 @@ public class main{
             return;
         }
 
+        Bucket nodeBucket = new Bucket(1); 
+        String[] nodeContact = new String[] {node.getNodeIp(), String.valueOf(node.getNodePort()),node.getNodeId};
+        nodeBucket.update(nodeContact);
+
+        Bucket bootstrapBucket = new Bucket(Utils.BUCKET_SIZE); 
+        String[] bootstrapContact = new String[] {bootstrapNode.getNodeIp(), String.valueOf(bootstrapNode.getNodePort()), bootstrapNode.getNodeId()};
+        bootstrapBucket.update(bootstrapContact);
+
+        node.setRoutingTable(nodeBucket);
+        node.setRoutingTable(bootstrapBucket);
         
+        Communication find = new Communication(
+            Communication.MessageType.FIND_NODE,
+            node.getNodeIp() + ","+ String.valueOf(node.getNodePort()) + "," + node.getNodeId() ,
+            node,
+            bootstrapNode
+        );
+
+        response = client.sendMessage(bootstrapNode, find);
+
+        if (response == null) {
+            System.out.println("No response from bootstrap node.");
+            return;
+        }
 
 
 

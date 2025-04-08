@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class Bucket{
-    private List<Node> nodes;
-    private int size;
+    private List<String[]> nodes;
+    private int size; // size is K
     private int range;
 
     public Bucket(int size){
@@ -13,23 +13,21 @@ public class Bucket{
         this.size = size;
     }
 
-    public List<Node> getNodes(){
+    public List<String[]> getNodes(){
         return this.nodes;
     }
 
     public boolean isFull(){
-        return this.nodes.size() == this.size;
+        return nodes.size() >= size;
     }
 
     public int getRange(){
         return this.range;
     }
 
-    public void update(Node newNode){
+    public void update(String[] newNode){
         if(isFull()){
             nodes.remove(nodes.size()-1);
-            nodes.add(newNode);
-            return;
         }
         nodes.add(newNode);
     }

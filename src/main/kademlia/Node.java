@@ -50,6 +50,14 @@ public class Node implements Serializable{
         return this.port;
     }
 
+    public RoutingTable getRoutingTable(){
+        return this.routingTable;
+    }
+
+    public void setRoutingTable(Bucket bucket){
+        this.routingTable.addBucket(bucket);
+    }
+
     public PublicKey getPublicKey() {
         return this.keyPair.getPublic();
     }
