@@ -21,9 +21,20 @@ public class Client{
         ) {
             output.writeObject(message);
             output.flush();
+            System.out.println("Message sent!");
 
             Communication response = (Communication) input.readObject();
-            System.out.println("Received response: " + response.getType());
+            System.out.println("Received response: " + response.getInformation());
+
+            switch(response.getType()){
+                case NACK: 
+                    if(response.getInformation().equals("Wrong challenge response.")){
+                        input.close();
+                        output.close();
+                        socket.close();
+                        System.exit(0);
+                    }
+            }
             return response;
 
         } catch (Exception e) {

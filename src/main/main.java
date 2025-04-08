@@ -57,6 +57,34 @@ public class main{
             return;
         }
 
+        int nounce =  Utils.createRandomNumber(999999);
+        String string = node.getNodeId() + response.getInformation() + nounce;
+        String hash = Utils.hashSHA256(string);
+        String prefix = "0".repeat(Utils.CHALLENGE_DIFFICULTY);
+        while(!hash.startsWith(prefix)){
+            nounce =  Utils.createRandomNumber(999999);
+            string = node.getNodeId() + response.getInformation() + nounce;
+            hash = Utils.hashSHA256(string);
+        }
+
+        Communication challenge = new Communication(
+            Communication.MessageType.CHALLENGE,
+            String.valueOf(nounce),
+            node,
+            bootstrapNode
+        );
+
+        response = client.sendMessage(bootstrapNode, challenge);
+
+        if (response == null) {
+            System.out.println("No response from bootstrap node.");
+            return;
+        }
+
+        
+
+
+
     }
 
     public static void main(String[] args){

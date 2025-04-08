@@ -6,7 +6,7 @@ import main.auctions.*;
 public class Communication implements Serializable {
 
     public enum MessageType {
-        TX, BLOCK, PING, FINDNODE, ACK
+        PING, FINDNODE, ACK, NACK, CHALLENGE
     }
 
     private final MessageType type;

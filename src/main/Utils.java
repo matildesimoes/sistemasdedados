@@ -9,6 +9,7 @@ import java.security.*;
 
 
 public class Utils{
+    public static int CHALLENGE_DIFFICULTY = 2;
 
     public static String createRandomString(int length){
         SecureRandom random = new SecureRandom();
