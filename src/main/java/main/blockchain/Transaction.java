@@ -29,6 +29,10 @@ public class Transaction implements Serializable{
         this.timestamp = Timestamp.from(Instant.now());
     }
 
+    public Timestamp getTimestamp(){
+        return this.timestamp;
+    }
+
     private String signTransaction(PrivateKey privateKey){
         try {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();

@@ -17,6 +17,7 @@ public class BlockHeader implements Serializable {
         this.prevHash = prevHash;
         this.timestamp = Timestamp.from(Instant.now());
         this.nounce = nounce;
+        this.merkleRoot = merkleRoot;
 
     }
 
