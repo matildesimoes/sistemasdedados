@@ -75,7 +75,7 @@ public class Server implements Serializable{
                         break;
                     }
                     
-                    String response = "Correct challenge response.";
+                    String response = "CHALLENGE completed.";
                     System.out.println(response);            
                     Communication newMsg = new Communication(Communication.MessageType.ACK, response, this.selfNode, sender);
                     output.writeObject(newMsg);
@@ -83,8 +83,27 @@ public class Server implements Serializable{
                 case FIND_NODE:
                     String[] nodeContact = msg.getInformation().split(",");
 
-                    List<String[]> closest = routingTable.findClosest(sender.getNodeId(), Utils.BUCKET_SIZE);       
-                    this.selfNode.setRoutingTable();
+                    String[] test = new String[] {"127.0.0.1","5000","2T/+UTBm5DpTbbLqVVJ1d4u3Q04="};
+                    String[] test2 = new String[] {"127.0.0.1","5001","2T/+UTBm5DpTqwLqVcJ0F2u3Q04="};
+                    Bucket bucket = new Bucket(Utils.BUCKET_SIZE);
+                    bucket.update(test);
+                    bucket.update(test2);
+                    this.routingTable.addBucket(bucket);
+
+                    if(!this.routingTable.nodeExist(sender)){
+                        this.routingTable.addNodeToBucket(nodeContact);
+                    }
+
+                    List<String[]> closest = this.routingTable.findClosest(sender.getNodeId(), Utils.BUCKET_SIZE);       
+
+                    String closestNodes = "";
+                    for(String[] s : closest){
+                        closestNodes += s[0] +","+ s[1] + ","+ s[2] + "-";
+
+                    }
+
+                    newMsg = new Communication(Communication.MessageType.FIND_NODE, closestNodes, this.selfNode, sender);
+                    output.writeObject(newMsg);
                     break;
                 default:
                     System.out.println("Unknown message Type.");            

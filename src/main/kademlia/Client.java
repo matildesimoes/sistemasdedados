@@ -12,7 +12,13 @@ import java.net.UnknownHostException;
 
 
 public class Client{
+    private final Node selfNode;
     
+   public Client(Node selfNode){
+        this.selfNode = selfNode;
+
+   }
+
    public Communication sendMessage(Node receiver, Communication message) {
         try (
             Socket socket = new Socket(receiver.getNodeIp(), receiver.getNodePort());
@@ -34,6 +40,17 @@ public class Client{
                         socket.close();
                         System.exit(0);
                     }
+                case FIND_NODE: 
+                    String[] groups = response.getInformation().split("-");
+                    
+                    RoutingTable routingTable = this.selfNode.getRoutingTable();
+
+                    for(String group : groups){
+                        String[] nodeContact = group.split(",");
+                        routingTable.addNodeToBucket(nodeContact);
+                    }
+                    break;
+
             }
             return response;
 

@@ -22,17 +22,16 @@ public class RoutingTable implements Serializable{
         this.buckets.add(bucket);
     }
 
-
     public boolean nodeExist(Node node){
         String nodeId = node.getNodeId();
 
         BigInteger distance = distance(this.selfNodeId, nodeId); 
-        int range = distance.bitLength() - 1;
+        int range = distance.bitLength() - 1; // 2^i -> 2^(i+1)
 
         for(Bucket b : buckets){
             if(b.getRange() == range){
                 List<String[]> nodes = b.getNodes();
-
+                
                 for(String[] n : nodes){
                     if(n[2] == nodeId)
                         return true;
@@ -43,6 +42,19 @@ public class RoutingTable implements Serializable{
 
         return false;
 
+    }
+
+    public void addNodeToBucket(String[] nodeContact){
+
+        BigInteger distance = distance(this.selfNodeId, nodeContact[2]); 
+        int range = distance.bitLength() - 1;
+
+        for(Bucket b : buckets){
+            if(b.getRange() == range){
+                b.update(nodeContact);
+            }
+                break;
+        }
     }
 
 
@@ -57,6 +69,7 @@ public class RoutingTable implements Serializable{
         for (int i = 0; i < Math.min(a.length, b.length); i++) {
             result[i] += (a[i] ^ b[i]);
         }
+        BigInteger bi= new BigInteger(1,result);
         return new BigInteger(1, result);
     }
 
@@ -85,5 +98,6 @@ public class RoutingTable implements Serializable{
 
         return result;
     }
+
 }
 

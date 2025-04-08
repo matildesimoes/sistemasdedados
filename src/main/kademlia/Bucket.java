@@ -2,8 +2,9 @@ package main.kademlia;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.io.Serializable;
 
-public class Bucket{
+public class Bucket implements Serializable{
     private List<String[]> nodes;
     private int size; // size is K
     private int range;

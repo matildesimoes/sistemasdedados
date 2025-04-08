@@ -34,7 +34,7 @@ public class main{
     */
 
     public static void createNode(String bootstrapAddress, Node node){
-        Client client = new Client();
+        Client client = new Client(node);
 
         String[] parts = bootstrapAddress.split(":");
         String bootstrapIp = parts[0];
@@ -82,7 +82,7 @@ public class main{
         }
 
         Bucket nodeBucket = new Bucket(1); 
-        String[] nodeContact = new String[] {node.getNodeIp(), String.valueOf(node.getNodePort()),node.getNodeId};
+        String[] nodeContact = new String[] {node.getNodeIp(), String.valueOf(node.getNodePort()),node.getNodeId()};
         nodeBucket.update(nodeContact);
 
         Bucket bootstrapBucket = new Bucket(Utils.BUCKET_SIZE); 
