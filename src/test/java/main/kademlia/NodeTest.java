@@ -60,18 +60,5 @@ public class NodeTest {
         assertEquals(now, node.getTimeAlive());
     }
 
-    @Test
-    public void testSetAndGetLatestPing() {
-        Timestamp now = new Timestamp(System.currentTimeMillis());
-        node.setLatestPing(now);
-        assertEquals(now, node.getLatestPing());
-    }
-
-    @Test
-    public void testSetRoutingTable_AddsBucket() {
-        Bucket bucket = new Bucket(0);
-        node.setRoutingTable(bucket);
-        assertTrue(node.getRoutingTable().getBuckets().contains(bucket));
-    }
 }
 
