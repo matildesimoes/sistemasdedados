@@ -11,12 +11,14 @@ public class Communication implements Serializable {
 
     private final MessageType type;
     private final String information;
-    private final Node sender;
+    private final String[] sender;
+    private final String[] receiver;
 
-    public Communication(MessageType type, String information, Node sender, Node recevier) {
+    public Communication(MessageType type, String information, String[] sender, String[] receiver) {
         this.type = type;
         this.information = information;
         this.sender = sender;
+        this.receiver = receiver;
     }
 
     public MessageType getType() {
@@ -27,8 +29,12 @@ public class Communication implements Serializable {
         return this.information;
     }
 
-    public Node getSender() {
+    public String[] getSender() {
         return this.sender;
+    }
+
+    public String[] getReceiver() {
+        return this.receiver;
     }
 
 }

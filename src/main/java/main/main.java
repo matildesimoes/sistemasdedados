@@ -33,85 +33,6 @@ public class main{
     }
     */
 
-    public static void createNode(String bootstrapAddress, Node node){
-        Client client = new Client(node);
-
-        String[] parts = bootstrapAddress.split(":");
-        String bootstrapIp = parts[0];
-        int bootstrapPort = Integer.parseInt(parts[1]);
-
-        Node bootstrapNode = new Node(bootstrapIp,bootstrapPort);
-
-        Communication ping = new Communication(
-            Communication.MessageType.PING,
-            "join?",
-            node,
-            bootstrapNode
-        );
-
-        Communication response = client.sendMessage(bootstrapNode, ping);
-
-
-        if (response == null) {
-            System.out.println("No response from bootstrap node.");
-            return;
-        }
-
-        int nounce =  Utils.createRandomNumber(999999);
-        String string = node.getNodeId() + response.getInformation() + nounce;
-        String hash = Utils.hashSHA256(string);
-        String prefix = "0".repeat(Utils.CHALLENGE_DIFFICULTY);
-        while(!hash.startsWith(prefix)){
-            nounce =  Utils.createRandomNumber(999999);
-            string = node.getNodeId() + response.getInformation() + nounce;
-            hash = Utils.hashSHA256(string);
-        }
-
-        Communication challenge = new Communication(
-            Communication.MessageType.CHALLENGE,
-            String.valueOf(nounce),
-            node,
-            bootstrapNode
-        );
-
-        response = client.sendMessage(bootstrapNode, challenge);
-
-        if (response == null) {
-            System.out.println("No response from bootstrap node.");
-            return;
-        }
-
-        Bucket nodeBucket = new Bucket(1); 
-        String[] nodeContact = new String[] {node.getNodeIp(), String.valueOf(node.getNodePort()),node.getNodeId()};
-        nodeBucket.update(nodeContact);
-
-        Bucket bootstrapBucket = new Bucket(Utils.BUCKET_SIZE); 
-        String[] bootstrapContact = new String[] {bootstrapNode.getNodeIp(), String.valueOf(bootstrapNode.getNodePort()), bootstrapNode.getNodeId()};
-        bootstrapBucket.update(bootstrapContact);
-
-        node.setRoutingTable(nodeBucket);
-        node.setRoutingTable(bootstrapBucket);
-        
-        Communication find = new Communication(
-            Communication.MessageType.FIND_NODE,
-            node.getNodeIp() + ","+ String.valueOf(node.getNodePort()) + "," + node.getNodeId() ,
-            node,
-            bootstrapNode
-        );
-
-        response = client.sendMessage(bootstrapNode, find);
-
-        if (response == null) {
-            System.out.println("No response from bootstrap node.");
-            return;
-        }
-    
-        // Send FIND_NODE to the Closest Nodes that received
-
-
-
-    }
-
     public static void main(String[] args){
 
        /*
@@ -142,15 +63,18 @@ public class main{
         String bootstrapAddress = args.length == 2 ? args[1] : null;
 
         Node node = new Node(ip, port);
-        RoutingTable routingTable = new RoutingTable(node.getNodeId());
+        String[] nodeContact = {ip, String.valueOf(port), node.getNodeId()};
+        RoutingTable routingTable = new RoutingTable(nodeContact);
         Server server = new Server(ip, port, routingTable, node);
+        Client client = new Client(node);
 
         new Thread(server::start).start();
 
         System.out.println("Node started at " + ip + ":" + port);
 
         if(bootstrapAddress != null)
-        createNode(bootstrapAddress, node);
+            client.joinNetwork(bootstrapAddress);
+            
 
         Scanner in = new Scanner(System.in);
 

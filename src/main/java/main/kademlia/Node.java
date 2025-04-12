@@ -7,6 +7,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.io.Serializable;
 
+import main.blockchain.*;
 
 import main.Utils;
 
@@ -18,7 +19,7 @@ public class Node implements Serializable{
     private final Server server;
     private final RoutingTable routingTable;
     private Timestamp timeAlive;
-    private Timestamp latestPing;
+    private Blockchain blockchain;
 
 
     public enum Type {
@@ -33,11 +34,12 @@ public class Node implements Serializable{
         PublicKey publicKey = getPublicKey();
         this.nodeId = Utils.publicKeySignature(publicKey);
 
-        this.routingTable = new RoutingTable(this.nodeId);
+        String[] nodeContact = {this.ip, String.valueOf(this.port), this.nodeId};
+
+        this.routingTable = new RoutingTable(nodeContact);
         this.server = new Server(ip,port, this.routingTable, this);
 
         this.timeAlive = null;
-        this.latestPing = null;
     }
     
     public String getNodeId() {
@@ -54,9 +56,6 @@ public class Node implements Serializable{
         return this.routingTable;
     }
 
-    public void setRoutingTable(Bucket bucket){
-        this.routingTable.addBucket(bucket);
-    }
 
     public PublicKey getPublicKey() {
         return this.keyPair.getPublic();
@@ -74,12 +73,5 @@ public class Node implements Serializable{
         this.timeAlive = timestamp;
     }
 
-    public Timestamp getLatestPing(){
-        return this.latestPing;
-    }
-
-    public void setLatestPing(Timestamp timestamp){
-        this.latestPing = timestamp;
-    }
 
 }

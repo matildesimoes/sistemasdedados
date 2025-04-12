@@ -7,64 +7,55 @@ import java.io.Serializable;
 import java.util.PriorityQueue;
 import java.util.Comparator;
 
+import main.Utils;
 
 public class RoutingTable implements Serializable{
     private final List<Bucket> buckets;
-    private final String selfNodeId;
+    private final String[] selfNodeId;
 
-    public RoutingTable(String selfNodeId) {
+    public RoutingTable(String[] selfNodeId) {
         this.selfNodeId = selfNodeId;
         this.buckets = new ArrayList<>();
-
-    }
-
-    public void addBucket(Bucket bucket){
-        this.buckets.add(bucket);
-    }
-
-    public boolean nodeExist(Node node){
-        String nodeId = node.getNodeId();
-
-        BigInteger distance = distance(this.selfNodeId, nodeId); 
-        int range = distance.bitLength() - 1; // 2^i -> 2^(i+1)
-
-        for(Bucket b : buckets){
-            if(b.getRange() == range){
-                List<String[]> nodes = b.getNodes();
-                
-                for(String[] n : nodes){
-                    if(n[2] == nodeId)
-                        return true;
-                }
-                break;
-            }
+        for (int i = 0; i < 160; i++) {
+            this.buckets.add(new Bucket(Utils.BUCKET_SIZE)); 
         }
+        this.buckets.get(0).update(selfNodeId);
+    }
 
+
+    public boolean nodeExist(String[] node){
+        String nodeId = node[2];
+
+        BigInteger distance = distance(this.selfNodeId[2], nodeId); 
+        int range = distance.bitLength() - 1; // 2^i -> 2^(i+1)
+        
+        Bucket b = this.buckets.get(range);
+        List<String[]> nodes = b.getNodes();
+        for (String[] n : nodes) {
+            if (n[2].equals(nodeId)) 
+                return true;
+        }
         return false;
-
     }
 
     public void addNodeToBucket(String[] nodeContact){
 
-        BigInteger distance = distance(this.selfNodeId, nodeContact[2]); 
+        BigInteger distance = distance(this.selfNodeId[2], nodeContact[2]); 
         int range = distance.bitLength() - 1;
 
-        for(Bucket b : buckets){
-            if(b.getRange() == range){
-                b.update(nodeContact);
-            }
-                break;
-        }
+        this.buckets.get(range).update(nodeContact);
+
     }
 
     public void removeNode(String nodeId){
-        for (Bucket b : this.buckets) {
-            List<String[]> nodes = b.getNodes();
-            nodes.removeIf(node -> node[2].equals(nodeId));
-        }
+        BigInteger distance = distance(this.selfNodeId[2], nodeId); 
+        int range = distance.bitLength() - 1;
+
+        Bucket b = this.buckets.get(range);
+        List<String[]> nodes = b.getNodes();
+        nodes.removeIf(node -> node[2].equals(nodeId));
+
     }
-
-
 
 
     public static BigInteger distance(String src, String dst) {

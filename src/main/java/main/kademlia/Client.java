@@ -7,7 +7,14 @@ import java.io.EOFException;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Queue;
+import java.util.LinkedList;
 
+import main.*;
 
 import java.net.Socket;
 import java.net.InetSocketAddress;
@@ -16,15 +23,17 @@ import java.net.UnknownHostException;
 
 public class Client{
     private final Node selfNode;
+    private final String[] selfNodeContact;
     
    public Client(Node selfNode){
         this.selfNode = selfNode;
+        this.selfNodeContact = new String[]{this.selfNode.getNodeId(), String.valueOf(this.selfNode.getNodePort()), this.selfNode.getNodeId()};
 
    }
 
-   public Communication sendMessage(Node receiver, Communication message) {
+   public Communication sendMessage(String[] receiver, Communication message) {
         try (
-            Socket socket = new Socket(receiver.getNodeIp(), receiver.getNodePort());
+            Socket socket = new Socket(receiver[0], Integer.valueOf(receiver[1]));
             ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
             ObjectInputStream input = new ObjectInputStream(socket.getInputStream())
         ) {
@@ -38,9 +47,8 @@ public class Client{
             switch(response.getType()){
                 case ACK: 
                     if(response.getInformation().equals("CHALLENGE completed.")){
-                        receiver.setTimeAlive(Timestamp.from(Instant.now()));
+                        this.selfNode.setTimeAlive(Timestamp.from(Instant.now()));
                     }
-                    receiver.setLatestPing(Timestamp.from(Instant.now()));
                     break; 
                 case NACK: 
                     if(response.getInformation().equals("Wrong challenge response.")){
@@ -59,17 +67,118 @@ public class Client{
                         routingTable.addNodeToBucket(nodeContact);
                     }
                     break;
-
             }
             return response;
 
         } catch (Exception e) {
-            System.err.println("Failed to communicate with node " + receiver.getNodeId());
+            System.err.println("Failed to communicate with node " + receiver[2]);
             if (message.getType() == Communication.MessageType.PING) {
-                System.out.println("Node " + receiver.getNodeId() + " did not respond to PING. Removing from routing table.");
-                this.selfNode.getRoutingTable().removeNode(receiver.getNodeId());
+                System.out.println("Node " + receiver[2] + " did not respond to PING. Removing from routing table.");
+                this.selfNode.getRoutingTable().removeNode(receiver[2]);
             }
             return null;
         }
     } 
+    public void joinNetwork(String bootstrapAddress){
+
+        String[] parts = bootstrapAddress.split(":");
+        String bootstrapIp = parts[0];
+        int bootstrapPort = Integer.parseInt(parts[1]);
+
+        Node bootstrapNode = new Node(bootstrapIp,bootstrapPort);
+
+        String[] bootstrapNodeContact = {bootstrapIp, String.valueOf(bootstrapPort), bootstrapNode.getNodeId()};
+
+        Communication ping = new Communication(
+            Communication.MessageType.PING,
+            "join?",
+            this.selfNodeContact,
+            bootstrapNodeContact
+        );
+
+        Communication response = this.sendMessage(bootstrapNodeContact, ping);
+
+
+        if (response == null) {
+            System.out.println("No response from bootstrap node.");
+            return;
+        }
+
+        int nounce =  Utils.createRandomNumber(999999);
+        String string = this.selfNode.getNodeId() + response.getInformation() + nounce;
+        String hash = Utils.hashSHA256(string);
+        String prefix = "0".repeat(Utils.CHALLENGE_DIFFICULTY);
+        while(!hash.startsWith(prefix)){
+            nounce =  Utils.createRandomNumber(999999);
+            string = this.selfNode.getNodeId() + response.getInformation() + nounce;
+            hash = Utils.hashSHA256(string);
+        }
+
+        Communication challenge = new Communication(
+            Communication.MessageType.CHALLENGE,
+            String.valueOf(nounce),
+            this.selfNodeContact,
+            bootstrapNodeContact
+        );
+
+        response = this.sendMessage(bootstrapNodeContact, challenge);
+
+        if (response == null) {
+            System.out.println("No response from bootstrap node.");
+            return;
+        }
+
+        Set<String> visited = new HashSet<>();
+        Queue<String[]> toVisit = new LinkedList<>();
+
+        toVisit.add(bootstrapNodeContact);
+        
+        int steps = 0;
+        while (!toVisit.isEmpty() && steps < Utils.RECURSIVE_FIND_NODE) {
+            String[] current = toVisit.poll();
+            String nodeId = current[2];
+
+            if (visited.contains(nodeId)) continue;
+            visited.add(nodeId);
+
+            Communication find = new Communication(
+                Communication.MessageType.FIND_NODE,
+                this.selfNode.getNodeIp() + "," + String.valueOf(this.selfNode.getNodePort()) + "," + this.selfNode.getNodeId(),
+                this.selfNodeContact,
+                current
+            );
+
+            response = this.sendMessage(current, find);
+
+            if (response != null) {
+                List<String[]> closest = parseClosestNodes(response.getInformation()); // IP, PORT, ID
+                for (String[] contact : closest) {
+                    String contactId = contact[2];
+                    if (!visited.contains(contactId)) {
+                        toVisit.add(contact);
+                    }
+                }
+            }
+            steps++;
+        }
+        
+    }
+
+    public List<String[]> parseClosestNodes(String data) {
+        List<String[]> nodes = new ArrayList<>();
+        
+        if (data == null || data.isEmpty()) return nodes;
+
+        String[] entries = data.split("-");
+
+        for (String entry : entries) {
+            String[] parts = entry.split(",");
+            if (parts.length == 3) {
+                nodes.add(parts); 
+            }
+        }
+
+        return nodes;
+    }
+
 }

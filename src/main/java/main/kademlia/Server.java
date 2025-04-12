@@ -14,6 +14,7 @@ public class Server implements Serializable{
     private final int port;
     private final RoutingTable routingTable; 
     private final Node selfNode;
+    private final String[] selfNodeContact;
     private final ConcurrentMap<String, Integer> pendingChallenges;
 
     public Server(String ip, int port, RoutingTable routingTable, Node selfNode){
@@ -21,6 +22,7 @@ public class Server implements Serializable{
         this.port = port;
         this.routingTable = routingTable;
         this.selfNode = selfNode;
+        this.selfNodeContact = new String[]{this.ip, String.valueOf(this.port), this.selfNode.getNodeId()};
         this.pendingChallenges = new ConcurrentHashMap<>();
     }
     
@@ -44,7 +46,7 @@ public class Server implements Serializable{
             ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream())
         ) {
             Communication msg = (Communication) input.readObject();
-            Node sender = msg.getSender();
+            String[] sender = msg.getSender();
             String response = "";
             Communication newMsg = null;
             
@@ -52,61 +54,56 @@ public class Server implements Serializable{
                 case PING: 
                     if(!this.routingTable.nodeExist(sender)){
                         int challenge = Utils.createRandomNumber(16);
-                        pendingChallenges.put(sender.getNodeId(), challenge);
+                        pendingChallenges.put(sender[2], challenge);
                         
-                        newMsg = new Communication(Communication.MessageType.ACK, String.valueOf(challenge), this.selfNode, sender);
+                        newMsg = new Communication(Communication.MessageType.ACK, String.valueOf(challenge), this.selfNodeContact, sender);
                         output.writeObject(newMsg);
                         output.flush();
                     }else{
                         response = "PING Received.";
                         System.out.println(response);            
-                        newMsg = new Communication(Communication.MessageType.ACK, response, this.selfNode, sender);
+                        newMsg = new Communication(Communication.MessageType.ACK, response, this.selfNodeContact, sender);
                         output.writeObject(newMsg);
                         break; 
                     }
                     break;
                 case CHALLENGE: 
-                    int challenge = pendingChallenges.get(sender.getNodeId());
-                    String string = sender.getNodeId() + challenge + msg.getInformation();
+                    int challenge = pendingChallenges.get(sender[2]);
+                    String string = sender[2] + challenge + msg.getInformation();
                     String validateHash = Utils.hashSHA256(string);
                     String prefix = "0".repeat(Utils.CHALLENGE_DIFFICULTY); 
 
                     if(!validateHash.startsWith(prefix)){
                         response = "Wrong challenge response.";
                         System.out.println(response);            
-                        newMsg = new Communication(Communication.MessageType.NACK, response, this.selfNode, sender);
+                        newMsg = new Communication(Communication.MessageType.NACK, response, this.selfNodeContact, sender);
                         output.writeObject(newMsg);
                         break;
                     }
                     
                     response = "CHALLENGE completed.";
                     System.out.println(response);            
-                    newMsg = new Communication(Communication.MessageType.ACK, response, this.selfNode, sender);
+                    newMsg = new Communication(Communication.MessageType.ACK, response, this.selfNodeContact, sender);
                     output.writeObject(newMsg);
                     break; 
                 case FIND_NODE:
                     String[] nodeContact = msg.getInformation().split(",");
 
-                    String[] test = new String[] {"127.0.0.1","5000","2T/+UTBm5DpTbbLqVVJ1d4u3Q04="};
-                    String[] test2 = new String[] {"127.0.0.1","5001","2T/+UTBm5DpTqwLqVcJ0F2u3Q04="};
-                    Bucket bucket = new Bucket(Utils.BUCKET_SIZE);
-                    bucket.update(test);
-                    bucket.update(test2);
-                    this.routingTable.addBucket(bucket);
+                    //String[] test = new String[] {"127.0.0.1","5000","2T/+UTBm5DpTbbLqVVJ1d4u3Q04="};
+                    //this.routingTable.addNodeToBucket(test);
 
                     if(!this.routingTable.nodeExist(sender)){
                         this.routingTable.addNodeToBucket(nodeContact);
                     }
 
-                    List<String[]> closest = this.routingTable.findClosest(sender.getNodeId(), Utils.BUCKET_SIZE);       
+                    List<String[]> closest = this.routingTable.findClosest(sender[2], Utils.BUCKET_SIZE);       
 
                     String closestNodes = "";
                     for(String[] s : closest){
                         closestNodes += s[0] +","+ s[1] + ","+ s[2] + "-";
 
                     }
-
-                    newMsg = new Communication(Communication.MessageType.FIND_NODE, closestNodes, this.selfNode, sender);
+                    newMsg = new Communication(Communication.MessageType.FIND_NODE, closestNodes, this.selfNodeContact, sender);
                     output.writeObject(newMsg);
                     break;
                 default:

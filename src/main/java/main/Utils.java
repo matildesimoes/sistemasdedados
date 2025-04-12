@@ -12,6 +12,7 @@ public class Utils{
     public static int CHALLENGE_DIFFICULTY = 2;
     public static int BUCKET_SIZE = 3;
     public static int PING_FREQUENCY = 120; // seconds
+    public static int RECURSIVE_FIND_NODE = 1;
 
     public static String createRandomString(int length){
         SecureRandom random = new SecureRandom();
