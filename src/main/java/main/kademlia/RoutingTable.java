@@ -22,6 +22,9 @@ public class RoutingTable implements Serializable{
         this.buckets.get(0).update(selfNodeId);
     }
 
+    public List<Bucket> getBuckets(){
+        return this.buckets;
+    }
 
     public boolean nodeExist(String[] node){
         String nodeId = node[2];

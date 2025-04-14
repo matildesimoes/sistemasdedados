@@ -5,6 +5,9 @@ import main.blockchain.*;
 import main.auctions.*;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import main.kademlia.*;
 
@@ -77,6 +80,12 @@ public class main{
             
 
         Scanner in = new Scanner(System.in);
+
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+
+        scheduler.scheduleAtFixedRate(() -> {
+            client.checkIfNodeAlive();
+        }, Utils.PING_FREQUENCY, Utils.PING_FREQUENCY, TimeUnit.SECONDS);
 
             
 

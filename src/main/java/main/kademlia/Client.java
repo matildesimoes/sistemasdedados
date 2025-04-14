@@ -164,6 +164,33 @@ public class Client{
         
     }
 
+    public void checkIfNodeAlive(){
+        List<Bucket> buckets = this.selfNode.getRoutingTable().getBuckets();
+        for(Bucket bucket : buckets){
+            List<String[]> nodes = bucket.getNodes();
+            for(String[] nodeContact : nodes){
+                if(!nodeContact.equals(this.selfNodeContact)){
+                    Communication ping = new Communication(
+                        Communication.MessageType.PING,
+                        "are you alive?",
+                        this.selfNodeContact,
+                        nodeContact
+                    );
+
+                    Communication response = this.sendMessage(nodeContact, ping);
+
+                    if (response == null) {
+                        System.out.println("No PING response from node.");
+                        this.selfNode.getRoutingTable().removeNode(nodeContact[2]);
+                        return;
+                    }
+                }
+                
+            }
+        }
+
+    }
+
     public List<String[]> parseClosestNodes(String data) {
         List<String[]> nodes = new ArrayList<>();
         
