@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import main.Utils;
+import main.blockchain.*;
 
 public class Server implements Serializable{
     private final String ip;
@@ -104,6 +105,15 @@ public class Server implements Serializable{
 
                     }
                     newMsg = new Communication(Communication.MessageType.FIND_NODE, closestNodes, this.selfNodeContact, sender);
+                    output.writeObject(newMsg);
+                    break;
+                case FIND_VALUE:
+                    break;
+                case STORE:
+                    Block block = Block.fromString(msg.getInformation());
+                    
+                    this.selfNode.getBlockchain().storeBlock(block);
+                    newMsg = new Communication(Communication.MessageType.ACK, "STORE completed!", this.selfNodeContact, sender);
                     output.writeObject(newMsg);
                     break;
                 default:

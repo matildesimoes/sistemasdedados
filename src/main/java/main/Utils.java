@@ -13,6 +13,9 @@ public class Utils{
     public static int BUCKET_SIZE = 3;
     public static int PING_FREQUENCY = 120; // seconds
     public static int RECURSIVE_FIND_NODE = 1;
+    public static int TRANS_POOL_LIMIT_LENGTH = 2;
+    public static int TRANS_POOL_LIMIT_TIME = 120; // seconds
+    public static int BLOCK_CHAIN_LIMIT = 2; // number of blocks required to remove the fork
 
     public static String createRandomString(int length){
         SecureRandom random = new SecureRandom();

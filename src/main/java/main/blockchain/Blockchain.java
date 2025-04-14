@@ -13,6 +13,8 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.io.File;
+import java.sql.Timestamp;
+
 
 import main.Utils;
 
@@ -39,6 +41,55 @@ public class Blockchain{
             chain.addCompletedBlock(newBlock);
     }
 
+    public void createBlock(List<Transaction> transactions){
+        if(this.chains.size()==1){
+            addBlock(transactions, this.chains.get(0));
+        }else{
+            Chain chain = null;
+            Timestamp firstTimestamp;
+            Timestamp secondTimestamp;
+            for(int i=0; i < this.chains.size()-1; i++){
+                firstTimestamp = this.chains.get(i).getLatest().getBlockHeader().getTimestamp();
+                secondTimestamp = this.chains.get(i+1).getLatest().getBlockHeader().getTimestamp();
+                if(firstTimestamp.before(secondTimestamp) || firstTimestamp.equals(secondTimestamp)){
+                    chain = this.chains.get(i+1);
+                }else{
+                    chain = this.chains.get(i);
+                }
+            }
+            addBlock(transactions, chain);
+        }
+
+    }
+
+    public void storeBlock(Block block){
+        if(this.chains.size()==1){
+            BlockHeader latestBlockHeader = this.chains.get(0).getLatest().getBlockHeader();
+            if(block.getBlockHeader().getPrevHash() == latestBlockHeader.getPrevHash()) 
+                createNewChain(block);
+            else
+                this.chains.get(0).addCompletedBlock(block);
+        }else{
+            Chain chain = null;
+            Timestamp firstTimestamp;
+            Timestamp secondTimestamp;
+            for(int i=0; i < this.chains.size()-1; i++){
+                firstTimestamp = this.chains.get(i).getLatest().getBlockHeader().getTimestamp();
+                secondTimestamp = this.chains.get(i+1).getLatest().getBlockHeader().getTimestamp();
+                if(firstTimestamp.before(secondTimestamp) || firstTimestamp.equals(secondTimestamp)){
+                    chain = this.chains.get(i+1);
+                }else{
+                    chain = this.chains.get(i);
+                }
+            }
+            BlockHeader latestBlockHeader = chain.getLatest().getBlockHeader();
+            if(block.getBlockHeader().getPrevHash() == latestBlockHeader.getPrevHash()) 
+                createNewChain(block);
+            else
+                chain.addCompletedBlock(block);
+        }
+    }
+
     public static Blockchain createNewBlockchain(){
         Blockchain blockchain = new Blockchain();
 
@@ -63,6 +114,7 @@ public class Blockchain{
     }
 
     public void deleteChain(){
+
 
     }
 
@@ -107,8 +159,5 @@ public class Blockchain{
     public List<Chain> getChains() {
         return this.chains;
     }
-    
-
-
 
 }

@@ -2,6 +2,8 @@ package main.blockchain;
 
 import java.io.Serializable;
 import java.util.List;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 public class Block implements Serializable{
     private BlockHeader blockHeader;
@@ -25,6 +27,27 @@ public class Block implements Serializable{
 
     public BlockHeader getBlockHeader(){
         return this.blockHeader;
+    }
+
+    @Override
+    public String toString() {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.writeValueAsString(this);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static Block fromString(String json) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.readValue(json, Block.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
 }

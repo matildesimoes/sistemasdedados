@@ -6,6 +6,8 @@ import java.security.PublicKey;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.io.Serializable;
+import java.util.List;
+import java.util.ArrayList;
 
 import main.blockchain.*;
 
@@ -20,7 +22,7 @@ public class Node implements Serializable{
     private final RoutingTable routingTable;
     private Timestamp timeAlive;
     private Blockchain blockchain;
-
+    private final List<Transaction> transactionPool; 
 
     public enum Type {
         BOOTSTRAP, USER, MINER
@@ -40,6 +42,7 @@ public class Node implements Serializable{
         this.server = new Server(ip,port, this.routingTable, this);
 
         this.timeAlive = null;
+        this.transactionPool = new ArrayList<>();
     }
     
     public String getNodeId() {
@@ -73,5 +76,24 @@ public class Node implements Serializable{
         this.timeAlive = timestamp;
     }
 
+    public Blockchain getBlockchain(){
+        return this.blockchain;
+    }
+
+    public List<Transaction> getTransactionPool(){
+        return this.transactionPool;
+    }
+
+    public void addToTransactionPool(Transaction transaction){
+        this.transactionPool.add(transaction);
+    }
+
+    public int transactionPoolSize(){
+        return this.transactionPool.size();
+    }
+
+    public boolean isTransactionPoolFull(){
+        return this.transactionPool.size() == Utils.TRANS_POOL_LIMIT_LENGTH;
+    }
 
 }

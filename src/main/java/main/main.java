@@ -86,6 +86,11 @@ public class main{
             client.checkIfNodeAlive();
         }, Utils.PING_FREQUENCY, Utils.PING_FREQUENCY, TimeUnit.SECONDS);
 
+        scheduler.scheduleAtFixedRate(() -> {
+            if(node.transactionPoolSize() == 0) return;
+
+            node.getBlockchain().createBlock(node.getTransactionPool());
+        }, Utils.TRANS_POOL_LIMIT_TIME, Utils.TRANS_POOL_LIMIT_TIME, TimeUnit.SECONDS);
             
 
         while (true) {
