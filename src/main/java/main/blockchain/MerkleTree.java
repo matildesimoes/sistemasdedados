@@ -10,7 +10,7 @@ public class MerkleTree{
 
         List<String> tempHashes = new ArrayList<>();
         for(Transaction transaction : transactions){
-            String trans = transaction.signature;
+            String trans = transaction.getSignature();
             tempHashes.add(Utils.hashSHA256(trans));
         }
 

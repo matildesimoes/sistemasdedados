@@ -1,6 +1,6 @@
 package main.blockchain;
 
-import main.auctions.*;
+import main.kademlia.Node;
 
 import java.io.Serializable;
 import java.security.PrivateKey;
@@ -15,17 +15,23 @@ import java.security.MessageDigest;
 
 
 public class Transaction implements Serializable{
-    private User buyer;
-    private User seller;
+    private Node creator;
     private String information;
-    public String signature;
+    private String signature;
     private Timestamp timestamp;
+    private int auctionNumber;
+    private Type type;
 
-    public Transaction(User buyer, User seller, String information){
-        this.buyer = buyer;
-        this.seller = seller;
+    public enum Type {
+        CREATE_AUCTION, CLOSE_AUCTION, BID, START_AUCTION, REWARD
+    }
+
+    public Transaction(Type type, Node creator, int auctionNumber, String information){
+        this.type = type;
+        this.creator = creator;
+        this.auctionNumber = auctionNumber;
         this.information = information;
-        this.signature = signTransaction(buyer.getPrivateKey());
+        this.signature = signTransaction(this.creator.getPrivateKey());
         this.timestamp = Timestamp.from(Instant.now());
     }
 
@@ -33,13 +39,30 @@ public class Transaction implements Serializable{
         return this.timestamp;
     }
 
+    public int getAuctionNumber(){
+        return this.auctionNumber;
+    }
+
+    public Type getType(){
+        return this.type;
+    }
+
+    public String getSignature(){
+        return this.signature;
+    }
+
+    public String getInformation(){
+        return this.information;
+    }
+
     private String signTransaction(PrivateKey privateKey){
         try {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             ObjectOutputStream oos = new ObjectOutputStream(bos);
             
-            oos.writeObject(buyer);
-            oos.writeObject(seller);
+            oos.writeObject(type);
+            oos.writeObject(creator);
+            oos.writeObject(auctionNumber);
             oos.writeObject(information);
             oos.writeObject(timestamp);
             

@@ -1,7 +1,6 @@
 package main.kademlia;
 
 import java.io.Serializable;
-import main.auctions.*;
 
 public class Communication implements Serializable {
 

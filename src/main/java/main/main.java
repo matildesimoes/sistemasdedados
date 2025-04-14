@@ -2,7 +2,6 @@ package main;
 
 import java.util.Scanner;
 import main.blockchain.*;
-import main.auctions.*;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.concurrent.Executors;
