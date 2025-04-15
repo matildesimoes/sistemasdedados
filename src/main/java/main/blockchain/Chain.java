@@ -22,5 +22,10 @@ public class Chain{
         return blocks.size(); 
     }
 
+    public void removeBlock(int index) {
+        if (index >= 0 && index < blocks.size()) {
+            blocks.remove(index);
+        }
+    }
 
 }

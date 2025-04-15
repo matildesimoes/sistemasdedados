@@ -14,6 +14,9 @@ import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.io.File;
 import java.sql.Timestamp;
+import java.util.Map;
+import java.util.HashMap;
+
 
 
 import main.Utils;
@@ -21,9 +24,13 @@ import main.Utils;
 public class Blockchain{
     private static final String FILE_PATH = "data/chain_";
     private List<Chain> chains;
+    private Map<String, Integer> blockchainHeight;
+    private Map<Integer, Integer> blocksPerHeight;
 
     private Blockchain(){
         this.chains = new ArrayList<>();
+        this.blockchainHeight = new HashMap<>();
+        this.blocksPerHeight = new HashMap<>();
     }
 
     public void addBlock(List<Transaction> transactions, Chain chain){
@@ -37,8 +44,22 @@ public class Blockchain{
         BlockHeader latestBlockHeader = chain.getLatest().getBlockHeader();
         if(newBlockHeader.getPrevHash() == latestBlockHeader.getPrevHash()) 
             createNewChain(newBlock);
-        else
+        else{
             chain.addCompletedBlock(newBlock);
+            changeHeight(newBlock);
+            trimFork(chain, newBlock);
+        }
+    }
+
+    private void changeHeight(Block block) {
+        String hash = block.getBlockHeader().getHash();
+        String prevHash = block.getBlockHeader().getPrevHash();
+        int height = 0;
+        if (prevHash != null && blockchainHeight.containsKey(prevHash)) {
+            height = blockchainHeight.get(prevHash) + 1;
+        }
+        blockchainHeight.put(hash, height);
+        blocksPerHeight.put(height, blocksPerHeight.getOrDefault(height, 0) + 1);
     }
 
     public void createBlock(List<Transaction> transactions){
@@ -67,8 +88,11 @@ public class Blockchain{
             BlockHeader latestBlockHeader = this.chains.get(0).getLatest().getBlockHeader();
             if(block.getBlockHeader().getPrevHash() == latestBlockHeader.getPrevHash()) 
                 createNewChain(block);
-            else
+            else{
                 this.chains.get(0).addCompletedBlock(block);
+                changeHeight(block);
+                trimFork(this.chains.get(0), block);
+            }
         }else{
             Chain chain = null;
             Timestamp firstTimestamp;
@@ -85,8 +109,11 @@ public class Blockchain{
             BlockHeader latestBlockHeader = chain.getLatest().getBlockHeader();
             if(block.getBlockHeader().getPrevHash() == latestBlockHeader.getPrevHash()) 
                 createNewChain(block);
-            else
+            else{
                 chain.addCompletedBlock(block);
+                changeHeight(block);
+                trimFork(chain, block);
+            }
         }
     }
 
@@ -103,20 +130,63 @@ public class Blockchain{
 
         genesisChain.addCompletedBlock(genesisBlock);
         blockchain.chains.add(genesisChain);
+        blockchain.blockchainHeight.put(genesisBlockHeader.getHash(), 0);
+        blockchain.blocksPerHeight.put(0, 1);
+
         return blockchain;
     }
 
     public void createNewChain(Block block){
         Chain newChain = new Chain();
         newChain.addCompletedBlock(block);
-        this.chains.add(newChain);
-        
+        this.chains.add(newChain);  
+        changeHeight(block);
     }
 
-    public void deleteChain(){
+    public void trimFork(Chain currentChain, Block newBlock) {
+        String newHash = newBlock.getBlockHeader().getHash();
+        int newHeight = blockchainHeight.getOrDefault(newHash, 0);
 
+        for (Chain chain : this.chains) {
+            if (chain == currentChain) continue;
 
+            for (int i = 0; i < chain.size(); i++) {
+                Block block = chain.getBlock(i);
+                String hash = block.getBlockHeader().getHash();
+                int height = blockchainHeight.getOrDefault(hash, 0);
+                int countAtHeight = blocksPerHeight.getOrDefault(height, 0);
+                int diff = height - newHeight;
+
+                // Found a forked height with more than 1 block
+                if (countAtHeight > 1 && diff >= Utils.BLOCK_CHAIN_LIMIT) {
+
+                    // Remove all blocks from this point forward
+                    for (int j = chain.size() - 1; j >= i; j--) {
+                        Block toRemove = chain.getBlock(j);
+                        String h = toRemove.getBlockHeader().getHash();
+                        int hHeight = blockchainHeight.getOrDefault(h, 0);
+
+                        // Remove from chain
+                        chain.removeBlock(j);
+                        blockchainHeight.remove(h);
+
+                        // Update block count at height
+                        int remaining = blocksPerHeight.getOrDefault(hHeight, 1);
+                        if (remaining > 1) {
+                            blocksPerHeight.put(hHeight, remaining - 1);
+                        } else {
+                            blocksPerHeight.remove(hHeight);
+                        }
+
+                    }
+
+                    break; 
+                }
+            }
+        }
     }
+
+
 
     public void saveBlockchain() {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
