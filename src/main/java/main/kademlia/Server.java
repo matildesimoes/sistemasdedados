@@ -115,6 +115,7 @@ public class Server implements Serializable{
                         for(Block block : chain.getBlocks()){
                             if(block.getBlockHeader().getHash() == key){
                                newMsg = new Communication(Communication.MessageType.FIND_VALUE, block.toString(), this.selfNodeContact, sender);
+                               output.writeObject(newMsg);
                                break;
                             }
                         }
@@ -124,6 +125,15 @@ public class Server implements Serializable{
                     break;
                 case STORE:
                     Block block = Block.fromString(msg.getInformation());
+
+                    String newMerkleRoot = MerkleTree.getMerkleRoot(block.getTransaction()); 
+
+                    if(!newMerkleRoot.equals(block.getBlockHeader().getMerkleRoot())){
+                    
+                    newMsg = new Communication(Communication.MessageType.NACK, "Invalid MerkleRoot.", this.selfNodeContact, sender);
+                    output.writeObject(newMsg);
+                    break;
+                    }
                     
                     this.selfNode.getBlockchain().storeBlock(block);
                     newMsg = new Communication(Communication.MessageType.ACK, "STORE completed!", this.selfNodeContact, sender);

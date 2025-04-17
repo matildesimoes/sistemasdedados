@@ -15,6 +15,7 @@ import java.util.Queue;
 import java.util.LinkedList;
 
 import main.*;
+import main.blockchain.*;
 
 import java.net.Socket;
 import java.net.InetSocketAddress;
@@ -214,6 +215,27 @@ public class Client{
             }
         }
         return nodesWithoutBlock;
+    }
+
+    public void store(Block block){
+        String blockString = block.toString();
+        RoutingTable selfRoutingTable = this.selfNode.getRoutingTable();
+
+        for(Bucket b : selfRoutingTable.getBuckets()){
+            for(String[] nodeContact : b.getNodes()){
+                Communication store = new Communication(
+                    Communication.MessageType.STORE,
+                    blockString,
+                    this.selfNodeContact,
+                    nodeContact
+                );
+                Communication response = this.sendMessage(nodeContact, store);
+                if (response == null) {
+                    System.out.println("No response from node.");
+                    break;
+                }
+            }
+        }
     }
 
     public void checkIfNodeAlive(){
