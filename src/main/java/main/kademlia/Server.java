@@ -108,6 +108,19 @@ public class Server implements Serializable{
                     output.writeObject(newMsg);
                     break;
                 case FIND_VALUE:
+                    String key = msg.getInformation();
+
+                    Blockchain selfBlockchain = this.selfNode.getBlockchain();
+                    for(Chain chain: selfBlockchain.getChains()){
+                        for(Block block : chain.getBlocks()){
+                            if(block.getBlockHeader().getHash() == key){
+                               newMsg = new Communication(Communication.MessageType.FIND_VALUE, block.toString(), this.selfNodeContact, sender);
+                               break;
+                            }
+                        }
+                    }
+                
+                    newMsg = new Communication(Communication.MessageType.NACK, "Value not found.", this.selfNodeContact, sender);
                     break;
                 case STORE:
                     Block block = Block.fromString(msg.getInformation());

@@ -83,6 +83,7 @@ public class Blockchain{
 
     }
 
+    //TODO: Verificar os 3 ultimos blocos em vez de só o ultimo.
     public void storeBlock(Block block){
         if(this.chains.size()==1){
             BlockHeader latestBlockHeader = this.chains.get(0).getLatest().getBlockHeader();

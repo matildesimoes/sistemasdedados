@@ -10,6 +10,10 @@ public class Chain{
         blocks.add(b); 
     }
 
+    public List<Block> getBlocks(){
+        return this.blocks;
+    }
+
     public Block getBlock(int pos){
         return this.blocks.get(pos);
     }
