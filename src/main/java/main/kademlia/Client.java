@@ -165,6 +165,30 @@ public class Client{
             }
             steps++;
         }
+
+        RoutingTable selfRoutingTable = this.selfNode.getRoutingTable();
+        List<String[]> closest = selfRoutingTable.findClosest(this.selfNodeContact[2], 1);
+
+        Communication findBlockchain = new Communication(
+            Communication.MessageType.FIND_BLOCKCHAIN,
+            "I want your blockchain :)",
+            this.selfNodeContact,
+            closest.get(0)
+        );
+
+        response = this.sendMessage(bootstrapNodeContact, challenge);
+
+        if (response == null) {
+            System.out.println("No response from bootstrap node.");
+            return;
+        }
+
+        Blockchain selfBlockchain = this.selfNode.getBlockchain();
+        List<Chain> chains = selfBlockchain.blockchainFromString(response.getInformation());
+        selfBlockchain.setChains(chains);
+
+
+
         
     }
 

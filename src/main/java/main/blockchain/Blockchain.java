@@ -17,6 +17,9 @@ import java.sql.Timestamp;
 import java.util.Map;
 import java.util.HashMap;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 
 import main.Utils;
@@ -225,10 +228,33 @@ public class Blockchain{
         return blockchain;
     }
 
+    public static String blockchainToString(List<Chain> blockchain) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.writeValueAsString(blockchain);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static List<Chain> blockchainFromString(String json) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.readValue(json, new TypeReference<List<Chain>>() {});
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
     
     
     public List<Chain> getChains() {
         return this.chains;
+    }
+
+    public void setChains(List<Chain> chains){
+        this.chains =chains;
     }
 
 }

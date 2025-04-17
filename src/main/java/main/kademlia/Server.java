@@ -139,6 +139,14 @@ public class Server implements Serializable{
                     newMsg = new Communication(Communication.MessageType.ACK, "STORE completed!", this.selfNodeContact, sender);
                     output.writeObject(newMsg);
                     break;
+                case FIND_BLOCKCHAIN:
+                    selfBlockchain = this.selfNode.getBlockchain();
+                    
+                    String blockchainString = selfBlockchain.blockchainToString(selfBlockchain.getChains());
+                    
+                    newMsg = new Communication(Communication.MessageType.ACK, blockchainString, this.selfNodeContact, sender);
+                    output.writeObject(newMsg);
+                    break;
                 default:
                     System.out.println("Unknown message Type.");            
                     break;
