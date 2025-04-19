@@ -52,11 +52,57 @@ public class BlockchainTest {
 
     @Test
     public void testSerializationAndDeserialization() {
-        String json = Blockchain.blockchainToString(blockchain.getChains());
+        List<Chain> originalChains = blockchain.getChains();
+        String json = Blockchain.blockchainToString(originalChains);
         List<Chain> loadedChains = Blockchain.blockchainFromString(json);
 
         assertNotNull(loadedChains);
-        assertEquals(blockchain.getChains().size(), loadedChains.size());
+        assertEquals(originalChains.size(), loadedChains.size());
+
+        for (int i = 0; i < originalChains.size(); i++) {
+            Chain original = originalChains.get(i);
+            Chain loaded = loadedChains.get(i);
+
+            assertEquals(original.size(), loaded.size());
+
+            for (int j = 0; j < original.size(); j++) {
+                Block originalBlock = original.getBlock(j);
+                Block loadedBlock = loaded.getBlock(j);
+
+                // Compare basic block info
+                assertEquals(originalBlock.getBlockHeader().getHash(), loadedBlock.getBlockHeader().getHash());
+                assertEquals(originalBlock.getBlockHeader().getPrevHash(), loadedBlock.getBlockHeader().getPrevHash());
+                assertEquals(originalBlock.getBlockHeader().getMerkleRoot(), loadedBlock.getBlockHeader().getMerkleRoot());
+                assertEquals(
+                    originalBlock.getBlockHeader().getTimestamp().getTime(),
+                    loadedBlock.getBlockHeader().getTimestamp().getTime()
+                );
+                assertEquals(originalBlock.getBlockHeader().getNounce(), loadedBlock.getBlockHeader().getNounce());
+
+                // Compare transactions
+                List<Transaction> originalTx = originalBlock.getTransaction();
+                List<Transaction> loadedTx = loadedBlock.getTransaction();
+                assertEquals(originalTx.size(), loadedTx.size());
+
+                for (int k = 0; k < originalTx.size(); k++) {
+                    Transaction t1 = originalTx.get(k);
+                    Transaction t2 = loadedTx.get(k);
+
+                    assertEquals(t1.getType(), t2.getType());
+                    assertEquals(t1.getAuctionNumber(), t2.getAuctionNumber());
+                    assertEquals(t1.getInformation(), t2.getInformation());
+                    assertEquals(t1.getSignature(), t2.getSignature());
+                    assertEquals(t1.getTimestamp().getTime(), t2.getTimestamp().getTime());
+
+                    assertNotNull(t1.getCreator());
+                    assertNotNull(t2.getCreator());
+                    assertEquals(t1.getCreator().getNodeId(), t2.getCreator().getNodeId());
+
+                }
+            }
+        }
     }
+
+
 }
 

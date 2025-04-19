@@ -70,7 +70,7 @@ public class RoutingTable implements Serializable{
 
         byte[] result = new byte[a.length];
         for (int i = 0; i < Math.min(a.length, b.length); i++) {
-            result[i] += (a[i] ^ b[i]);
+            result[i] = (byte) (a[i] ^ b[i]);
         }
         BigInteger bi= new BigInteger(1,result);
         return new BigInteger(1, result);

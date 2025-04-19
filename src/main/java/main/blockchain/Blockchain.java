@@ -233,7 +233,7 @@ public class Blockchain{
             ObjectMapper mapper = new ObjectMapper();
             return mapper.writeValueAsString(blockchain);
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Error converting to JSON: " + e.getMessage());
             return null;
         }
     }
@@ -243,7 +243,7 @@ public class Blockchain{
             ObjectMapper mapper = new ObjectMapper();
             return mapper.readValue(json, new TypeReference<List<Chain>>() {});
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Error reading JSON: " + e.getMessage());
             return null;
         }
     }

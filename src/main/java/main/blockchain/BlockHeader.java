@@ -13,6 +13,9 @@ public class BlockHeader implements Serializable {
     private int nounce;
     private String hash;
 
+    public BlockHeader() {
+    }
+
     public BlockHeader(String prevHash, int nounce, String merkleRoot) {
         this.prevHash = prevHash;
         this.timestamp = Timestamp.from(Instant.now());

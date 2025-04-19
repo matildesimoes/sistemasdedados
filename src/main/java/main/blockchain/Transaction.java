@@ -1,6 +1,7 @@
 package main.blockchain;
 
 import main.kademlia.Node;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.io.Serializable;
 import java.security.PrivateKey;
@@ -15,7 +16,10 @@ import java.security.MessageDigest;
 
 
 public class Transaction implements Serializable{
-    private Node creator;
+    //Ignore to avoid problems with serialization of PrivateKey 
+    @JsonIgnore
+    private transient Node creator; 
+
     private String information;
     private String signature;
     private Timestamp timestamp;
@@ -26,6 +30,10 @@ public class Transaction implements Serializable{
         CREATE_AUCTION, CLOSE_AUCTION, BID, START_AUCTION, REWARD
     }
 
+    //Default constructor required by Jackson
+    public Transaction() {
+    }
+
     public Transaction(Type type, Node creator, int auctionNumber, String information){
         this.type = type;
         this.creator = creator;
@@ -33,26 +41,6 @@ public class Transaction implements Serializable{
         this.information = information;
         this.signature = signTransaction(this.creator.getPrivateKey());
         this.timestamp = Timestamp.from(Instant.now());
-    }
-
-    public Timestamp getTimestamp(){
-        return this.timestamp;
-    }
-
-    public int getAuctionNumber(){
-        return this.auctionNumber;
-    }
-
-    public Type getType(){
-        return this.type;
-    }
-
-    public String getSignature(){
-        return this.signature;
-    }
-
-    public String getInformation(){
-        return this.information;
     }
 
     private String signTransaction(PrivateKey privateKey){
@@ -81,5 +69,31 @@ public class Transaction implements Serializable{
         }
 
     }
+
+    public Node getCreator() {
+        return creator;
+    }
+
+    public String getInformation(){
+        return this.information;
+    }
+
+    public Timestamp getTimestamp(){
+        return this.timestamp;
+    }
+
+    public int getAuctionNumber(){
+        return this.auctionNumber;
+    }
+
+    public Type getType(){
+        return this.type;
+    }
+
+    public String getSignature(){
+        return this.signature;
+    }
+
+
 
 }

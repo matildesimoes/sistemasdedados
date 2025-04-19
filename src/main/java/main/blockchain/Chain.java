@@ -2,8 +2,12 @@ package main.blockchain;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.io.Serializable;
 
-public class Chain{
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class Chain implements Serializable{
     private List<Block> blocks = new ArrayList<>();
 
     public void addCompletedBlock(Block b) { 

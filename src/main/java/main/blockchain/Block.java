@@ -2,6 +2,7 @@ package main.blockchain;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.ArrayList;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 
@@ -9,6 +10,11 @@ public class Block implements Serializable{
     private BlockHeader blockHeader;
     private List<Transaction> transactions;
     
+    public Block() {
+        this.transactions = new ArrayList<>();
+        this.blockHeader = new BlockHeader();
+    }
+
     public Block(List<Transaction> transactions){
         this.transactions = transactions;
         String merkleRoot = MerkleTree.getMerkleRoot(this.transactions);

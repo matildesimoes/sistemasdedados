@@ -1,4 +1,3 @@
-
 package test.main.kademlia;
 
 import main.kademlia.RoutingTable;
@@ -9,6 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.math.BigInteger;
+
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -42,19 +42,33 @@ public class RoutingTableTest {
     public void testFindClosest() {
         String[] node1 = {"127.0.0.1", "8002", "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"};
         String[] node2 = {"127.0.0.1", "8003", "cccccccccccccccccccccccccccccccc"};
+        String[] node3 = {"127.0.0.1", "8003", "ffffffffffffffffffffffffffffffff"};
+
         routingTable.addNodeToBucket(node1);
         routingTable.addNodeToBucket(node2);
+        routingTable.addNodeToBucket(node3);
 
-        List<String[]> closest = routingTable.findClosest(selfNode[2], 1);
-        assertEquals(1, closest.size());
-        
-        BigInteger dist1 = RoutingTable.distance(selfNode[2], node1[2]);
-        BigInteger dist2 = RoutingTable.distance(selfNode[2], node2[2]);
 
-        BigInteger expectedMin = dist1.compareTo(dist2) <= 0 ? dist1 : dist2;
-        BigInteger returnedDistance = RoutingTable.distance(selfNode[2], closest.get(0)[2]);
+        // Find the 2 closest nodes to selfId
+        List<String[]> closest = routingTable.findClosest(selfNode[2], 2);
 
-        assertEquals(expectedMin, returnedDistance, "Returned node is not the closest by distance");
+        assertEquals(2, closest.size());
+
+        // Compute distances of the first two closest nodes
+        BigInteger dist0 = routingTable.distance(selfNode[2], closest.get(0)[2]);
+        BigInteger dist1 = routingTable.distance(selfNode[2], closest.get(1)[2]);
+
+        // Assert that the list is sorted by XOR distance
+        assertTrue(dist0.compareTo(dist1) <= 0);
+
+        // Check if the first node is actually the closest among all three
+        BigInteger distNode1 = routingTable.distance(selfNode[2], node1[2]);
+        BigInteger distNode2 = routingTable.distance(selfNode[2], node2[2]);
+        BigInteger distNode3 = routingTable.distance(selfNode[2], node3[2]);
+
+        BigInteger min = distNode1.min(distNode2).min(distNode3);
+        assertEquals(min, dist0);
+
     }
 
     @Test
