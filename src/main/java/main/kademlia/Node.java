@@ -96,7 +96,4 @@ public class Node implements Serializable{
         return this.transactionPool.size() == Utils.TRANS_POOL_LIMIT_LENGTH;
     }
 
-    public void setBlockchain(Blockchain blockchain){
-        this.blockchain = blockchain;
-    }
 }

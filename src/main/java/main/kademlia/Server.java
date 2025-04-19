@@ -130,11 +130,12 @@ public class Server implements Serializable{
 
                     if(!newMerkleRoot.equals(block.getBlockHeader().getMerkleRoot())){
                     
-                    newMsg = new Communication(Communication.MessageType.NACK, "Invalid MerkleRoot.", this.selfNodeContact, sender);
-                    output.writeObject(newMsg);
-                    break;
+                        newMsg = new Communication(Communication.MessageType.NACK, "Invalid MerkleRoot.", this.selfNodeContact, sender);
+                        output.writeObject(newMsg);
+                        break;
                     }
                     
+                    System.out.println("STORE Received!");
                     this.selfNode.getBlockchain().storeBlock(block);
                     newMsg = new Communication(Communication.MessageType.ACK, "STORE completed!", this.selfNodeContact, sender);
                     output.writeObject(newMsg);

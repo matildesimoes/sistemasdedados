@@ -1,19 +1,29 @@
-package main.blockchain;
+package test.main.blockchain;
 
-import main.auctions.User;
+import main.blockchain.Block;
+import main.blockchain.Transaction;
+import main.kademlia.Node;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class BlockTest {
 
+    private Node creator;
+
+    @BeforeEach
+    public void setUp() {
+        creator = new Node("127.0.0.1", 8040);
+    }
+
     @Test
     public void testBlockWithoutPrevHash() {
-        User buyer = new User();
-        User seller = new User();
-
-        Transaction t1 = new Transaction(buyer, seller, "item1");
-        Transaction t2 = new Transaction(buyer, seller, "item2");
+        Transaction t1 = new Transaction(Transaction.Type.REWARD, creator, 0, "item1");
+        Transaction t2 = new Transaction(Transaction.Type.REWARD, creator, 0, "item2");
 
         Block block = new Block(List.of(t1, t2));
 
@@ -25,10 +35,7 @@ public class BlockTest {
 
     @Test
     public void testBlockWithPrevHashAndNounce() {
-        User buyer = new User();
-        User seller = new User();
-
-        Transaction t = new Transaction(buyer, seller, "itemX");
+        Transaction t = new Transaction(Transaction.Type.REWARD, creator, 1, "itemX");
         String prevHash = "abc123";
         int nounce = 42;
 
@@ -41,15 +48,12 @@ public class BlockTest {
 
     @Test
     public void testGetTransactions() {
-        User buyer = new User();
-        User seller = new User();
-
-        Transaction t = new Transaction(buyer, seller, "x");
+        Transaction t = new Transaction(Transaction.Type.REWARD, creator, 2, "x");
         Block block = new Block(List.of(t));
 
         List<Transaction> tx = block.getTransaction();
         assertEquals(1, tx.size());
-        assertEquals(t.signature, tx.get(0).signature);
+        assertEquals(t.getSignature(), tx.get(0).getSignature());
     }
 }
 

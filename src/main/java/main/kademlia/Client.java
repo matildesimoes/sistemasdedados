@@ -186,9 +186,6 @@ public class Client{
         Blockchain selfBlockchain = this.selfNode.getBlockchain();
         List<Chain> chains = selfBlockchain.blockchainFromString(response.getInformation());
         selfBlockchain.setChains(chains);
-
-
-
         
     }
 
