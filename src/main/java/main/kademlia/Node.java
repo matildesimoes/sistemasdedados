@@ -11,13 +11,19 @@ import java.util.ArrayList;
 
 import main.blockchain.*;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import main.Utils;
 
 public class Node implements Serializable{
     private final String nodeId;
     private final String ip;
     private final int port;
+    
+    // To not have problems serializing
+    @JsonIgnore
     private final KeyPair keyPair;
+
     private final Server server;
     private final RoutingTable routingTable;
     private Timestamp timeAlive;
@@ -43,6 +49,8 @@ public class Node implements Serializable{
 
         this.timeAlive = null;
         this.transactionPool = new ArrayList<>();
+
+        this.blockchain = new Blockchain();
     }
     
     public String getNodeId() {
@@ -60,10 +68,13 @@ public class Node implements Serializable{
     }
 
 
+    
+    @JsonIgnore
     public PublicKey getPublicKey() {
         return this.keyPair.getPublic();
     }
 
+    @JsonIgnore
     public PrivateKey getPrivateKey() {
         return this.keyPair.getPrivate();
     }

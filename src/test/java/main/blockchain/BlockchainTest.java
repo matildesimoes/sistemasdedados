@@ -17,7 +17,8 @@ public class BlockchainTest {
 
     @BeforeEach
     public void setUp() {
-        blockchain = Blockchain.createNewBlockchain();
+        blockchain = new Blockchain();
+        blockchain = blockchain.createNewBlockchain();
         creator = new Node("127.0.0.1", 8080);
     }
 

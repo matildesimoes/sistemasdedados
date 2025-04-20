@@ -70,30 +70,51 @@ public class Transaction implements Serializable{
 
     }
 
+    
+    @JsonIgnore
     public Node getCreator() {
         return creator;
     }
 
-    public String getInformation(){
-        return this.information;
+    public String getInformation() {
+        return information;
     }
 
-    public Timestamp getTimestamp(){
-        return this.timestamp;
+    public void setInformation(String information) {
+        this.information = information;
     }
 
-    public int getAuctionNumber(){
-        return this.auctionNumber;
+    public String getSignature() {
+        return signature;
     }
 
-    public Type getType(){
-        return this.type;
+    public void setSignature(String signature) {
+        this.signature = signature;
     }
 
-    public String getSignature(){
-        return this.signature;
+    public int getAuctionNumber() {
+        return auctionNumber;
     }
 
+    public void setAuctionNumber(int auctionNumber) {
+        this.auctionNumber = auctionNumber;
+    }
+
+    public Type getType() {
+        return type;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
+    }
+
+    public Timestamp getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Timestamp timestamp) {
+        this.timestamp = timestamp;
+    }
 
 
 }

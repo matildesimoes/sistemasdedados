@@ -16,6 +16,7 @@ import java.io.File;
 import java.sql.Timestamp;
 import java.util.Map;
 import java.util.HashMap;
+import java.io.Serializable;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,13 +25,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import main.Utils;
 
-public class Blockchain{
+public class Blockchain implements Serializable{
     private static final String FILE_PATH = "data/chain_";
     private List<Chain> chains;
     private Map<String, Integer> blockchainHeight;
     private Map<Integer, Integer> blocksPerHeight;
 
-    private Blockchain(){
+    public Blockchain(){
         this.chains = new ArrayList<>();
         this.blockchainHeight = new HashMap<>();
         this.blocksPerHeight = new HashMap<>();
@@ -121,8 +122,7 @@ public class Blockchain{
         }
     }
 
-    public static Blockchain createNewBlockchain(){
-        Blockchain blockchain = new Blockchain();
+    public Blockchain createNewBlockchain(){
 
         Chain genesisChain = new Chain();
         List<Transaction> transactions = new ArrayList<>();
@@ -133,11 +133,11 @@ public class Blockchain{
         genesisBlockHeader.setHash(Utils.hashSHA256(genesisBlockHeader));
 
         genesisChain.addCompletedBlock(genesisBlock);
-        blockchain.chains.add(genesisChain);
-        blockchain.blockchainHeight.put(genesisBlockHeader.getHash(), 0);
-        blockchain.blocksPerHeight.put(0, 1);
+        this.chains.add(genesisChain);
+        this.blockchainHeight.put(genesisBlockHeader.getHash(), 0);
+        this.blocksPerHeight.put(0, 1);
 
-        return blockchain;
+        return this;
     }
 
     public void createNewChain(Block block){
@@ -206,10 +206,9 @@ public class Blockchain{
         }
     }
 
-    public static Blockchain loadBlockchain() {
+    public Blockchain loadBlockchain() {
         Gson gson = new Gson();
-        Blockchain blockchain = new Blockchain();
-        blockchain.chains.clear();
+        this.chains.clear();
 
         int index = 1;
         while(true){
@@ -219,13 +218,13 @@ public class Blockchain{
             try (FileReader reader = new FileReader(file)) {
                 Type listType = new TypeToken<Chain>() {}.getType();
                 Chain loadedChain = gson.fromJson(reader, listType);
-                blockchain.chains.add(loadedChain);
+                this.chains.add(loadedChain);
             } catch (IOException e) {
                 System.err.println("Error loading Blockchain: " + e.getMessage());
             }
             index++;
         }
-        return blockchain;
+        return this;
     }
 
     public static String blockchainToString(List<Chain> blockchain) {

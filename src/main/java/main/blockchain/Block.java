@@ -4,8 +4,10 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.ArrayList;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Block implements Serializable{
     private BlockHeader blockHeader;
     private List<Transaction> transactions;
@@ -31,8 +33,16 @@ public class Block implements Serializable{
         return this.transactions;
     }
 
+    public void setTransaction(List<Transaction> transactions) {
+        this.transactions = transactions;
+    }
+    
     public BlockHeader getBlockHeader(){
         return this.blockHeader;
+    }
+
+    public void setBlockHeader(BlockHeader blockHeader) {
+        this.blockHeader = blockHeader;
     }
 
     @Override
@@ -41,7 +51,7 @@ public class Block implements Serializable{
             ObjectMapper mapper = new ObjectMapper();
             return mapper.writeValueAsString(this);
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Error converting to JSON: " + e.getMessage());
             return null;
         }
     }
@@ -51,7 +61,7 @@ public class Block implements Serializable{
             ObjectMapper mapper = new ObjectMapper();
             return mapper.readValue(json, Block.class);
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Error reading JSON: " + e.getMessage());
             return null;
         }
     }
