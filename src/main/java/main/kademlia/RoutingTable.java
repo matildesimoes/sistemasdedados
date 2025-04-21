@@ -29,9 +29,19 @@ public class RoutingTable implements Serializable{
     public boolean nodeExist(String[] node){
         String nodeId = node[2];
 
+        // Prevent checking self
+        if (nodeId.equals(this.selfNodeId[2])) {
+            return false;
+        }
+
         BigInteger distance = distance(this.selfNodeId[2], nodeId); 
         int range = distance.bitLength() - 1; // 2^i -> 2^(i+1)
         
+        // Guard against invalid range
+        if (range < 0 || range >= this.buckets.size()) {
+            return false;
+        }
+
         Bucket b = this.buckets.get(range);
         List<String[]> nodes = b.getNodes();
         for (String[] n : nodes) {

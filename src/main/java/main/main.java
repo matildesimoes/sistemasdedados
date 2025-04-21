@@ -72,7 +72,7 @@ public class main{
 
         new Thread(server::start).start();
 
-        System.out.println("Node started at " + ip + ":" + port);
+        System.out.println("Node started at " + ip + ":" + port+ ".\nNodeId: " + node.getNodeId());
 
         if(bootstrapAddress != null)
             client.joinNetwork(bootstrapAddress);

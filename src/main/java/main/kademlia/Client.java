@@ -176,7 +176,7 @@ public class Client{
             closest.get(0)
         );
 
-        response = this.sendMessage(bootstrapNodeContact, challenge);
+        response = this.sendMessage(bootstrapNodeContact, findBlockchain);
 
         if (response == null) {
             System.out.println("No response from bootstrap node.");
