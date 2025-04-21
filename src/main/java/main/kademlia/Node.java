@@ -16,7 +16,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import main.Utils;
 
 public class Node implements Serializable{
-    private final String nodeId;
+    private String nodeId;
     private final String ip;
     private final int port;
     
@@ -25,10 +25,10 @@ public class Node implements Serializable{
     private final KeyPair keyPair;
 
     private final Server server;
-    private final RoutingTable routingTable;
+    private RoutingTable routingTable;
     private Timestamp timeAlive;
     private Blockchain blockchain;
-    private final List<Transaction> transactionPool; 
+    private List<Transaction> transactionPool; 
 
     public enum Type {
         BOOTSTRAP, USER, MINER
@@ -56,6 +56,9 @@ public class Node implements Serializable{
     public String getNodeId() {
         return this.nodeId;
     }
+    public void setNodeId(String nodeId) {
+        this.nodeId = nodeId;
+    }
     public String getNodeIp() {
         return this.ip;
     }
@@ -67,6 +70,9 @@ public class Node implements Serializable{
         return this.routingTable;
     }
 
+    public void setRoutingTable(RoutingTable routingTable){
+        this.routingTable = routingTable;
+    }
 
     
     @JsonIgnore
@@ -105,6 +111,10 @@ public class Node implements Serializable{
 
     public boolean isTransactionPoolFull(){
         return this.transactionPool.size() == Utils.TRANS_POOL_LIMIT_LENGTH;
+    }
+
+    public void clearTransactionPool(){
+        this.transactionPool = new ArrayList<>();
     }
 
 }

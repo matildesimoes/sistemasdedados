@@ -58,6 +58,7 @@ public class Client{
                         socket.close();
                         System.exit(0);
                     }
+                    break;
                 case FIND_NODE: 
                     String[] groups = response.getInformation().split("-");
                     
@@ -99,8 +100,8 @@ public class Client{
             bootstrapNodeContact
         );
 
-        Communication response = this.sendMessage(bootstrapNodeContact, ping);
 
+        Communication response = this.sendMessage(bootstrapNodeContact, ping);
 
         if (response == null) {
             System.out.println("No response from bootstrap node.");
@@ -135,6 +136,7 @@ public class Client{
         Queue<String[]> toVisit = new LinkedList<>();
 
         toVisit.add(bootstrapNodeContact);
+        this.selfNode.getRoutingTable().addNodeToBucket(bootstrapNodeContact);
         
         int steps = 0;
         while (!toVisit.isEmpty() && steps < Utils.RECURSIVE_FIND_NODE) {
@@ -189,63 +191,65 @@ public class Client{
         
     }
 
-    public List<String> findValue(String hash){
-        List<String> nodesWithoutBlock = new ArrayList<>(); 
+    public List<String[]> findValue(String hash){
+        List<String[]> nodesWithoutBlock = new ArrayList<>(); 
         RoutingTable selfRoutingTable = this.selfNode.getRoutingTable();
         for(Bucket b : selfRoutingTable.getBuckets()){
             for(String[] nodeContact : b.getNodes()){
-                Communication blockHash = new Communication(
-                    Communication.MessageType.FIND_VALUE,
-                    hash,
-                    this.selfNodeContact,
-                    nodeContact
-                );
-                Communication response = this.sendMessage(nodeContact, blockHash);
-
-                if (response == null) {
-                    System.out.println("No response from node.");
-                    break;
-                }
-
-                if(response.getType() == Communication.MessageType.NACK){
-                    nodesWithoutBlock.add(nodeContact[2]);
-
-                    Communication findNode = new Communication(
-                        Communication.MessageType.FIND_NODE,
-                        this.selfNodeContact[2],
+                if(!nodeContact[2].equals(this.selfNodeContact[2])){
+                    Communication blockHash = new Communication(
+                        Communication.MessageType.FIND_VALUE,
+                        hash,
                         this.selfNodeContact,
                         nodeContact
                     );
-                    response = this.sendMessage(nodeContact, findNode);
+                    Communication response = this.sendMessage(nodeContact, blockHash);
 
                     if (response == null) {
                         System.out.println("No response from node.");
                         break;
-                    }else{
-                        List<String[]> closest = parseClosestNodes(response.getInformation()); // IP, PORT, ID
-                        for (String[] contact : closest) {
-                            String contactId = contact[2];
-                            if (!selfRoutingTable.nodeExist(contact)) {
-                                this.selfNode.getRoutingTable().addNodeToBucket(contact);
+                    }
+
+                    if(response.getType() == Communication.MessageType.NACK){
+                        nodesWithoutBlock.add(nodeContact);
+
+                        Communication findNode = new Communication(
+                            Communication.MessageType.FIND_NODE,
+                            this.selfNodeContact[2],
+                            this.selfNodeContact,
+                            nodeContact
+                        );
+                        response = this.sendMessage(nodeContact, findNode);
+
+                        if (response == null) {
+                            System.out.println("No response from node.");
+                            break;
+                        }else{
+                            List<String[]> closest = parseClosestNodes(response.getInformation()); // IP, PORT, ID
+                            for (String[] contact : closest) {
+                                String contactId = contact[2];
+                                if (!selfRoutingTable.nodeExist(contact)) {
+                                    this.selfNode.getRoutingTable().addNodeToBucket(contact);
+                                }
                             }
                         }
+
                     }
 
                 }
-
             }
         }
         return nodesWithoutBlock;
     }
 
     public void store(Block block){
-        String blockString = block.toString();
-        RoutingTable selfRoutingTable = this.selfNode.getRoutingTable();
 
-        for(Bucket b : selfRoutingTable.getBuckets()){
-            for(String[] nodeContact : b.getNodes()){
-                if(nodeContact[2].equals(this.selfNodeContact[2])) 
-                    continue;
+        List<String[]> nodesWithoutBlock = findValue(block.getBlockHeader().getHash());
+
+        String blockString = block.toString();
+
+        for(String[] nodeContact : nodesWithoutBlock){
+            if(!nodeContact[2].equals(this.selfNodeContact[2])){
 
                 Communication store = new Communication(
                     Communication.MessageType.STORE,

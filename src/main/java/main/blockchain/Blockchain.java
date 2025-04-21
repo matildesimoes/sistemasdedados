@@ -35,7 +35,7 @@ public class Blockchain implements Serializable{
         this.blocksPerHeight = new HashMap<>();
     }
 
-    public void addBlock(List<Transaction> transactions, Chain chain){
+    public Block addBlock(List<Transaction> transactions, Chain chain){
         int nounce = 0;
         BlockHeader prevBlockHeader = chain.getBlock(chain.size()-1).getBlockHeader();
         Block newBlock = new Block(transactions, nounce, prevBlockHeader.getHash());
@@ -51,6 +51,7 @@ public class Blockchain implements Serializable{
             changeHeight(newBlock);
             trimFork(chain, newBlock);
         }
+        return newBlock;
     }
 
     private void changeHeight(Block block) {
@@ -64,9 +65,10 @@ public class Blockchain implements Serializable{
         blocksPerHeight.put(height, blocksPerHeight.getOrDefault(height, 0) + 1);
     }
 
-    public void createBlock(List<Transaction> transactions){
+    public Block createBlock(List<Transaction> transactions){
+        Block newBlock = null;
         if(this.chains.size()==1){
-            addBlock(transactions, this.chains.get(0));
+            newBlock = addBlock(transactions, this.chains.get(0));
         }else{
             Chain chain = null;
             Timestamp firstTimestamp;
@@ -80,8 +82,10 @@ public class Blockchain implements Serializable{
                     chain = this.chains.get(i);
                 }
             }
-            addBlock(transactions, chain);
+            newBlock = addBlock(transactions, chain);
         }
+        
+        return newBlock;
 
     }
 

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.Set;
 import java.util.HashSet;
@@ -14,6 +15,7 @@ import main.kademlia.*;
 
 public class main{
     public static List<String> myAuctions = new ArrayList<>();
+    public static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     /*
     public static void createTestBlockchain(Blockchain blockchain, List<Transaction> trans) {
@@ -52,6 +54,17 @@ public class main{
         return null;
     }
 
+    public static void fullPoolLogic(Node node,Client client,Transaction trans, ScheduledFuture<?> future, Runnable task){
+        node.addToTransactionPool(trans);
+        if(node.isTransactionPoolFull()){
+            future.cancel(true);
+            Block newBlock = node.getBlockchain().createBlock(node.getTransactionPool());
+            node.clearTransactionPool();
+            client.store(newBlock);
+            future = scheduler.scheduleAtFixedRate(task, Utils.TRANS_POOL_LIMIT_TIME, Utils.TRANS_POOL_LIMIT_TIME, TimeUnit.SECONDS);
+        }
+    }
+
     public static void main(String[] args){
 
        /*
@@ -84,8 +97,10 @@ public class main{
         Node node = new Node(ip, port);
         String[] nodeContact = {ip, String.valueOf(port), node.getNodeId()};
         RoutingTable routingTable = new RoutingTable(nodeContact);
+        node.setRoutingTable(routingTable);
         Server server = new Server(ip, port, routingTable, node);
         Client client = new Client(node);
+        node.getBlockchain().createNewBlockchain();
 
         new Thread(server::start).start();
 
@@ -97,19 +112,22 @@ public class main{
 
         Scanner in = new Scanner(System.in);
 
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+        ScheduledFuture<?> future;
 
         scheduler.scheduleAtFixedRate(() -> {
             client.checkIfNodeAlive();
         }, Utils.PING_FREQUENCY, Utils.PING_FREQUENCY, TimeUnit.SECONDS);
 
-        scheduler.scheduleAtFixedRate(() -> {
-            if(node.transactionPoolSize() == 0) return;
 
-            node.getBlockchain().createBlock(node.getTransactionPool());
-        }, Utils.TRANS_POOL_LIMIT_TIME, Utils.TRANS_POOL_LIMIT_TIME, TimeUnit.SECONDS);
-            
+        Runnable task = () -> {
+            if (node.transactionPoolSize() == 0) return;
 
+            Block newBlock = node.getBlockchain().createBlock(node.getTransactionPool());
+            node.clearTransactionPool();
+            client.store(newBlock);
+        };
+
+        future = scheduler.scheduleAtFixedRate(task, Utils.TRANS_POOL_LIMIT_TIME, Utils.TRANS_POOL_LIMIT_TIME, TimeUnit.SECONDS);
 
         while (true) {
             System.out.println("\n=======================================");
@@ -127,6 +145,25 @@ public class main{
                 case "1":
                     break;
                 case "2":
+                    List<Bucket> buckets = routingTable.getBuckets();
+
+                    System.out.println("Routing Table:");
+                    for (int i = 0; i < buckets.size(); i++) {
+                        Bucket bucket = buckets.get(i);
+
+                        List<String[]> nodes = bucket.getNodes();
+                        if (nodes.isEmpty()) {
+                        } else {
+                            System.out.println("Bucket " + i + ":");
+                            for (String[] n : nodes) {
+                                ip = n.length > 0 ? n[0] : "unknown-ip";
+                                String p = n.length > 1 ? n[1] : "unknown-port";
+                                String id = n.length > 2 ? n[2] : "unknown-id";
+
+                                System.out.println("  - IP: " + ip + ", Port: " + Integer.valueOf(port)+ ", ID: " + id);
+                            }
+                        }
+                    }
                     break;
                 case "3":
                     while(true){
@@ -154,8 +191,8 @@ public class main{
                                     item
                                 );
                                 myAuctions.add(item + " (id="+ random + ") ");
-                                node.addToTransactionPool(create);
                                 System.out.println("Auction created with id: " + random);
+                                fullPoolLogic(node,client,create,future,task);
                                 break;
                             case "2":
                                 for(int i=0; i< myAuctions.size(); i++){
@@ -179,8 +216,8 @@ public class main{
                                     item
                                 );
                             
-                                node.addToTransactionPool(start);
                                 System.out.println("Auction started with id: " + id);
+                                fullPoolLogic(node,client,start, future,task);
                                 break;
                             case "3":
                                 Set<String> activeAuctions = server.getActiveAuctions();
@@ -210,8 +247,8 @@ public class main{
                                     "Bid ammount: " + ammount
                                 );
                             
-                                node.addToTransactionPool(bid);
                                 System.out.println("Bid of " + ammount + " to Auction id: " + id);
+                                fullPoolLogic(node,client,bid, future,task);
 
                                 break;
                             case "4":
@@ -235,9 +272,9 @@ public class main{
                                     item
                                 );
                             
-                                node.addToTransactionPool(close);
-                                myAuctions.remove(item + " (id="+ id + ") ");
                                 System.out.println("Auction closed with id: " + id);
+                                myAuctions.remove(item + " (id="+ id + ") ");
+                                fullPoolLogic(node,client,close,future,task);
                                 break;
                             default:
                                 break;
