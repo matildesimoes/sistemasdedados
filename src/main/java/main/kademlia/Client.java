@@ -244,6 +244,9 @@ public class Client{
 
         for(Bucket b : selfRoutingTable.getBuckets()){
             for(String[] nodeContact : b.getNodes()){
+                if(nodeContact[2].equals(this.selfNodeContact[2])) 
+                    continue;
+
                 Communication store = new Communication(
                     Communication.MessageType.STORE,
                     blockString,

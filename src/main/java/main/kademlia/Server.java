@@ -6,6 +6,8 @@ import java.security.PublicKey;
 import java.util.concurrent.*;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
 
 import main.Utils;
 import main.blockchain.*;
@@ -17,6 +19,7 @@ public class Server implements Serializable{
     private final Node selfNode;
     private final String[] selfNodeContact;
     private final ConcurrentMap<String, Integer> pendingChallenges;
+    private final Set<String> activeAuctions;
 
     public Server(String ip, int port, RoutingTable routingTable, Node selfNode){
         this.ip = ip;
@@ -25,8 +28,13 @@ public class Server implements Serializable{
         this.selfNode = selfNode;
         this.selfNodeContact = new String[]{this.ip, String.valueOf(this.port), this.selfNode.getNodeId()};
         this.pendingChallenges = new ConcurrentHashMap<>();
+        this.activeAuctions = new HashSet<>();
     }
     
+    public Set<String> getActiveAuctions(){
+        return this.activeAuctions;
+    }
+
     public void start(){
         ExecutorService executor = Executors.newCachedThreadPool();
 
@@ -147,6 +155,7 @@ public class Server implements Serializable{
                         break;
                     }
                     
+                    updateActiveAuctions(block);
                     System.out.println("STORE Received!");
                     this.selfNode.getBlockchain().storeBlock(block);
                     newMsg = new Communication(Communication.MessageType.ACK, "STORE completed!", this.selfNodeContact, sender);
@@ -169,6 +178,23 @@ public class Server implements Serializable{
 
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    public void updateActiveAuctions(Block block){
+        for(Transaction trans : block.getTransaction()){
+            if(trans.getType().equals(Transaction.Type.START_AUCTION)){
+                activeAuctions.add(trans.getInformation() + "(id= " + trans.getAuctionNumber() + ")");
+                System.out.println("Auction started with id: " + trans.getAuctionNumber());
+
+
+            }
+            if(trans.getType().equals(Transaction.Type.CLOSE_AUCTION)){
+                activeAuctions.remove(trans.getInformation() + "(id= " + trans.getAuctionNumber() + ")");
+                System.out.println("Auction closed with id: " + trans.getAuctionNumber());
+
+
+            }
         }
     }
 

@@ -21,8 +21,6 @@ import java.io.Serializable;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-
-
 import main.Utils;
 
 public class Blockchain implements Serializable{

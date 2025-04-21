@@ -7,13 +7,10 @@ import java.util.ArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.Set;
-import java.util.HashSet;
 
 import main.kademlia.*;
 
 public class main{
-    public static List<String> myAuctions = new ArrayList<>();
 
     /*
     public static void createTestBlockchain(Blockchain blockchain, List<Transaction> trans) {
@@ -37,20 +34,6 @@ public class main{
         blockchain.saveBlockchain();
     }
     */
-    public static String checkAuctionId(int id){
-        String item = null;
-        for (String i : myAuctions) {
-            String[] p = i.split("id=");
-            if (p.length > 1) {
-                String idPart = p[1].split("\\)")[0];
-                if (Integer.parseInt(idPart) == id) {
-                    item = i.split(" \\(id=")[0]; 
-                    return item;
-                }
-            }
-        }
-        return null;
-    }
 
     public static void main(String[] args){
 
@@ -110,14 +93,13 @@ public class main{
         }, Utils.TRANS_POOL_LIMIT_TIME, Utils.TRANS_POOL_LIMIT_TIME, TimeUnit.SECONDS);
             
 
-
         while (true) {
             System.out.println("\n=======================================");
             System.out.println("      PUBLIC LEDGER FOR AUCTIONS");
             System.out.println("=======================================");
             System.out.println("1. View blockchain");
-            System.out.println("2. View Routing Table");
-            System.out.println("3. Create new transaction");
+            System.out.println("2. Create new transaction");
+            System.out.println("3. View Routing Table");
             System.out.println("0. Exit");
             System.out.print("\nChoose an option: ");
 
@@ -127,8 +109,6 @@ public class main{
                 case "1":
                     break;
                 case "2":
-                    break;
-                case "3":
                     while(true){
                         System.out.println("\n=======================================");
                         System.out.println("      PUBLIC LEDGER FOR AUCTIONS");
@@ -144,106 +124,31 @@ public class main{
 
                         switch(option){
                             case "1":
-                                System.out.print("Auction Item: ");
                                 String item = in.nextLine();
-                                int random = Utils.createRandomNumber(999999);
-                                Transaction create = new Transaction(
+                                Transaction trans = new Transaction(
                                     Transaction.Type.CREATE_AUCTION,
                                     node,   
-                                    random,
-                                    item
+                                    Utils.createRandomNumber(999999),
+                                    
                                 );
-                                myAuctions.add(item + " (id="+ random + ") ");
-                                node.addToTransactionPool(create);
-                                System.out.println("Auction created with id: " + random);
                                 break;
                             case "2":
-                                for(int i=0; i< myAuctions.size(); i++){
-                                    System.out.println((i+1) + ". " + myAuctions.get(i));
-                                }
-
-                                System.out.print("Auction id: ");
-                                int id = Integer.valueOf(in.nextLine().trim());
-                                item = checkAuctionId(id);
-
-                                if(item == null){
-                                    System.out.println("Invalid Auction id");
-                                    break;
-                                }
-                        
-
-                                Transaction start = new Transaction(
-                                    Transaction.Type.START_AUCTION,
-                                    node,   
-                                    id,
-                                    item
-                                );
-                            
-                                node.addToTransactionPool(start);
-                                System.out.println("Auction started with id: " + id);
                                 break;
                             case "3":
-                                Set<String> activeAuctions = server.getActiveAuctions();
-                                int index = 1;
-                                for (String auction : activeAuctions) {
-                                    System.out.println(index + ". " + auction);
-                                    index++;
-                                }
-                                  
-
-                                System.out.print("Auction id: ");
-                                id = Integer.valueOf(in.nextLine().trim());
-                                item = checkAuctionId(id);
-
-                                if(item == null){
-                                    System.out.println("Invalid Auction id");
-                                    break;
-                                }
-
-                                System.out.print("Ammount: ");
-                                int ammount = Integer.valueOf(in.nextLine().trim());
-
-                                Transaction bid = new Transaction(
-                                    Transaction.Type.BID,
-                                    node,   
-                                    id,
-                                    "Bid ammount: " + ammount
-                                );
-                            
-                                node.addToTransactionPool(bid);
-                                System.out.println("Bid of " + ammount + " to Auction id: " + id);
-
                                 break;
                             case "4":
-                                for(int i=0; i< myAuctions.size(); i++){
-                                    System.out.println((i+1) + ". " + myAuctions.get(i));
-                                }
-
-                                System.out.print("Auction id: ");
-                                id = Integer.valueOf(in.nextLine().trim());
-                                item = checkAuctionId(id);
-
-                                if(item == null){
-                                    System.out.println("Invalid Auction id");
-                                    break;
-                                }
-
-                                Transaction close = new Transaction(
-                                    Transaction.Type.CLOSE_AUCTION,
-                                    node,   
-                                    id,
-                                    item
-                                );
-                            
-                                node.addToTransactionPool(close);
-                                myAuctions.remove(item + " (id="+ id + ") ");
-                                System.out.println("Auction closed with id: " + id);
                                 break;
                             default:
                                 break;
                         }
                         if(option.equals("0")) break;
                     }
+                    break;
+                case "3":
+                    break;
+                case "4":
+                    break;
+                case "5":
                     break;
                 case "0":
                     System.out.println("Shutting down...");

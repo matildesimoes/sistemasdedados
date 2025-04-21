@@ -100,8 +100,8 @@ public class RoutingTable implements Serializable{
         PriorityQueue<String[]> pq = new PriorityQueue<>(Comparator.comparing(n -> distance(n[2], targetId)));
         for (Bucket b : buckets) {
             for (String[] n : b.getNodes()) {
-                if(n[2] == targetId) break;
-                pq.offer(n);
+                if(!(n[2].equals(targetId)))
+                    pq.offer(n);
             }
         }
         
