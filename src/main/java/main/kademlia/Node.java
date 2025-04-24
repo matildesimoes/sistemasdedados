@@ -8,6 +8,14 @@ import java.time.Instant;
 import java.io.Serializable;
 import java.util.List;
 import java.util.ArrayList;
+import java.security.spec.PKCS8EncodedKeySpec;
+import com.fasterxml.jackson.databind.*;
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.*;
+import java.security.spec.*;
+import java.util.Base64;
 
 import main.blockchain.*;
 
@@ -22,7 +30,8 @@ public class Node implements Serializable{
     
     // To not have problems serializing
     @JsonIgnore
-    private final KeyPair keyPair;
+    private final PrivateKey privateKey;
+    private final PublicKey publicKey;
 
     private final Server server;
     private RoutingTable routingTable;
@@ -37,10 +46,16 @@ public class Node implements Serializable{
     public Node(String ip, int port){
         this.ip = ip;
         this.port = port;
+        try {
+            String pubKeyPem = loadPublicKeyByPort(port);
+            this.publicKey = parsePublicKey(pubKeyPem);
+            this.nodeId = Utils.publicKeySignature(this.publicKey);
 
-        this.keyPair = Utils.generateKeyPair();
-        PublicKey publicKey = getPublicKey();
-        this.nodeId = Utils.publicKeySignature(publicKey);
+            String privateKeyPath = "data/private_node.pem";
+            this.privateKey = loadPrivateKeyFromPem(privateKeyPath);
+        } catch (Exception e) {
+            throw new RuntimeException("Error getting the public key: " + e.getMessage());
+        }
 
         String[] nodeContact = {this.ip, String.valueOf(this.port), this.nodeId};
 
@@ -77,12 +92,12 @@ public class Node implements Serializable{
     
     @JsonIgnore
     public PublicKey getPublicKey() {
-        return this.keyPair.getPublic();
+        return this.publicKey;
     }
 
     @JsonIgnore
     public PrivateKey getPrivateKey() {
-        return this.keyPair.getPrivate();
+        return this.privateKey;
     }
 
     public Timestamp getTimeAlive(){
@@ -117,4 +132,39 @@ public class Node implements Serializable{
         this.transactionPool = new ArrayList<>();
     }
 
+    public static String loadPublicKeyByPort(int port) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode root = mapper.readTree(new File("data/infonode.json"));
+        JsonNode nodes = root.get("nodes");
+
+        for (JsonNode node : nodes) {
+            if (node.get("port").asInt() == port) {
+                return node.get("public_key").asText();
+            }
+        }
+        throw new IllegalArgumentException("Port not found on JSON: " + port);
+    }
+
+    
+    public static PrivateKey loadPrivateKeyFromPem(String filename) throws Exception {
+        String keyPem = Files.readString(Paths.get(filename))
+            .replace("-----BEGIN PRIVATE KEY-----", "")
+            .replace("-----END PRIVATE KEY-----", "")
+            .replaceAll("\\s", "");
+
+        byte[] decoded = Base64.getDecoder().decode(keyPem);
+        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(decoded);
+        return KeyFactory.getInstance("RSA").generatePrivate(spec);
+    }
+
+    public static PublicKey parsePublicKey(String pem) throws Exception {
+        String cleanPem = pem
+                .replace("-----BEGIN PUBLIC KEY-----", "")
+                .replace("-----END PUBLIC KEY-----", "")
+                .replaceAll("\\s", "");
+
+        byte[] decoded = Base64.getDecoder().decode(cleanPem);
+        X509EncodedKeySpec spec = new X509EncodedKeySpec(decoded);
+        return KeyFactory.getInstance("RSA").generatePublic(spec);
+    }
 }

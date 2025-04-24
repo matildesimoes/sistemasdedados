@@ -1,0 +1,35 @@
+{
+  "nodes": [
+    {
+      "nodeType": "BOOTSTRAP", 
+      "ip": "127.0.0.1",
+      "port": 5000,
+      "public_key": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAo/C1YPDAuRe8NsnukScc\nRrv9es5x38k+eqroAdzzGLuI6RxB+wuHSUXdc7yHA3+LZGfGd26vDACAOcgA8m2v\nuXTjohPwsTqUbXUtY5FLm6eoL+XgrY+SCnG3rHGhqLeVC3ml8ZUqRWghzJ4Pckdx\niVNAl0MLjFzfMtnoT6wRCqshDJci7ONLQV2whGulklXEcFSoyEHsnzlj+mJ0ZCOn\n7kul39q8iW7NVARIjKuWffdSDAb3anoNWO6g3QeL0FJXleuHApm/Eg1Hup1jSQ0f\nmLEoJNcCMFL4eesZsu+MDj1NYEG1Wn/OFMnzFoiuxBM8AqxUvLoPbYykogJKy7Mw\n/wIDAQAB\n-----END PUBLIC KEY-----"
+    },
+    {
+      "nodeType": "BOOTSTRAP",
+      "ip": "127.0.0.1",
+      "port": 5001,
+      "public_key": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzcc2n4cTqk4ZiNnzQqAR\n4zeM061+J5STO1ssHa1nKhQWjEjzJM3bgNNkpBMClqTRZZGA/DcyEJ3xPjihXDu9\ngMQ7OwGQQG8mLw/3HodtkJjPAvXyYzFE1O85s2CA7gEj9/DXJujM7zbEsvbZGqQl\ndHy2xBeUr7Q//2nGhBOdn1NC9DCwJDs75yeyu1KAsyKIm3DBA+//7JSvGRADwCKs\npZdFt8gfKRp71PHr4H/FaFcamzbhjpf0z0Q929FfGG1LE4Qn6i49Fl5lExZm5Lmk\nUuzcedETexnes8n0ajsS262qONjJ7WVV1uP+RdQz3i3SBSjm6hM+SykigMRvNMmN\nuwIDAQAB\n-----END PUBLIC KEY-----"
+    },
+    {
+      "nodeType": "BOOTSTRAP",
+      "ip": "127.0.0.1",
+      "port": 5002,
+      "public_key": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtQw/C+nlbaIXM3AGOUXW\nr/jQZ2Jq+CaYPEETHkUbzyDsuCUS+eAnYFCkUEoGav1f7Q+Alwe5IgYjig/i+l4x\nJLcEyyMm27o8FPCqqxJCSSd8eFj3w+puHjC/3nzPAxv1xsF9ohSU7COTf8c0rLOK\n4IbZt1dXQL/vzECqpBF1ZDwrB3nsDSkii/vrR/6le3y1Oct7T2RLbyzAcbQimicT\nDQ8ozNiU83gICc3bzdw8quJx/nhYC2NukEpegnrEQeGhwsSazndu4cykdtOwg6Hh\nSGPezvZCN0C/K5U3+MvG0ohxC+d8y+HYexbKD7nL2Vlw5xKLX9umbgwaCWP0Y1BR\nSwIDAQAB\n-----END PUBLIC KEY-----"
+    },
+    {
+      "nodeType": "BOOTSTRAP",
+      "ip": "127.0.0.1",
+      "port": 5003,
+      "public_key": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwsTxSc8Cm5yaDVtJCjQp\nYvLSvWuHlvZZ2pTV29wUjpj0/WAtB16fRqrsS6QqLh20BZXyALLJhfILNLXmKJy6\nhuAwex/oaduoTBJYdw1DCipI0CPThGTvTwknbLLuGniBEWLdRto2fF9Nt7kuj1BN\ntNvShu7xXnfbqyn5mG1TzEhpryjPVwUaaw8peVb4Swqf++MNWplkqMBjS1vwLp14\nsUShsSJgwFbhb3lmvT+PQW+Io9ZD8lXYCetXoktl1PLum9IoxDddQbxlUI2e8KJP\nPU3EgTa+rLIX3OdGFsfVsEWkpIGBtcRsgooLRpkuIVkgUj7LLKg4XGt4Bh3W15Mp\naQIDAQAB\n-----END PUBLIC KEY-----"
+    },
+    {
+      "nodeType": "BOOTSTRAP",
+      "ip": "127.0.0.1",
+      "port": 5004,
+      "public_key": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA8O5RMzEwi5Eq9cXPqjIb\n2Wa6vly6h2rUgKXurJ06JGZZ+RH0RgRpGLEHrACzuPCcVxLo+v9GgoVDSEWJivVH\ntXUf8yA7gnjpE8jCcCYPF1/DRXRTiLR6rZnHM5pR9iAuGJwFrlb4xer7mjlAmk/t\nGe6T97i0bTWcE/pNsgTKAIVGOBvi7GTJkyd91JdTSwf6AnohR04e9yg3JDZ0tiWf\n0rw+GkuhB79l144y3mu9m7H4736CQLKV+NoffiDO1rwDOFbo7DslaZGUIJe9yE1D\nI4qGuFaFRLEq1w6BtbNtafUKm31nmPAkzGgRqSBh6wUBqfm+4ejVWZ6qvDXBS/0+\nIQIDAQAB\n-----END PUBLIC KEY-----"
+    }
+  ]
+}
+
