@@ -160,7 +160,7 @@ public class main{
                                 String p = n.length > 1 ? n[1] : "unknown-port";
                                 String id = n.length > 2 ? n[2] : "unknown-id";
 
-                                System.out.println("  - IP: " + ip + ", Port: " + Integer.valueOf(port)+ ", ID: " + id);
+                                System.out.println("  - IP: " + ip + ", Port: " + Integer.valueOf(p)+ ", ID: " + id);
                             }
                         }
                     }

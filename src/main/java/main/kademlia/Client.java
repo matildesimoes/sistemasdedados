@@ -91,7 +91,6 @@ public class Client{
 
         String[] bootstrapNodeContact = {bootstrapIp, String.valueOf(bootstrapPort), bootstrapNode.getNodeId()};
 
-        this.selfNode.getRoutingTable().addNodeToBucket(bootstrapNodeContact);
 
         Communication ping = new Communication(
             Communication.MessageType.PING,
@@ -136,7 +135,6 @@ public class Client{
         Queue<String[]> toVisit = new LinkedList<>();
 
         toVisit.add(bootstrapNodeContact);
-        this.selfNode.getRoutingTable().addNodeToBucket(bootstrapNodeContact);
         
         int steps = 0;
         while (!toVisit.isEmpty() && steps < Utils.RECURSIVE_FIND_NODE) {
@@ -159,9 +157,8 @@ public class Client{
                 List<String[]> closest = parseClosestNodes(response.getInformation()); // IP, PORT, ID
                 for (String[] contact : closest) {
                     String contactId = contact[2];
-                    if (!visited.contains(contactId)) {
+                    if (!visited.contains(contactId) && !selfNode.getRoutingTable().nodeExist(contact)) {
                         toVisit.add(contact);
-                        this.selfNode.getRoutingTable().addNodeToBucket(contact);
                     }
                 }
             }
