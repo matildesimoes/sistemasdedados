@@ -40,10 +40,10 @@ public class Client{
         ) {
             output.writeObject(message);
             output.flush();
-            System.out.println("Message sent!");
+            System.out.println("Message sent (to" + receiver[2]+"): " + message.getInformation());
 
             Communication response = (Communication) input.readObject();
-            System.out.println("Received response: " + response.getInformation());
+            System.out.println("Received response (from "+ receiver[2] +"): "+ response.getInformation());
 
             switch(response.getType()){
                 case ACK: 
@@ -93,7 +93,7 @@ public class Client{
 
 
         Communication ping = new Communication(
-            Communication.MessageType.PING,
+            Communication.MessageType.CHALLENGE_INIT,
             "join?",
             this.selfNodeContact,
             bootstrapNodeContact
@@ -191,8 +191,11 @@ public class Client{
     public List<String[]> findValue(String hash){
         List<String[]> nodesWithoutBlock = new ArrayList<>(); 
         RoutingTable selfRoutingTable = this.selfNode.getRoutingTable();
-        for(Bucket b : selfRoutingTable.getBuckets()){
-            for(String[] nodeContact : b.getNodes()){
+        List<Bucket> bucketsSnapshot = new ArrayList<>(selfRoutingTable.getBuckets());
+
+        for(Bucket b : bucketsSnapshot){
+            List<String[]> nodesSnapshot = new ArrayList<>(b.getNodes());
+            for(String[] nodeContact : nodesSnapshot){
                 if(!nodeContact[2].equals(this.selfNodeContact[2])){
                     Communication blockHash = new Communication(
                         Communication.MessageType.FIND_VALUE,
@@ -204,7 +207,7 @@ public class Client{
 
                     if (response == null) {
                         System.out.println("No response from node.");
-                        break;
+                        continue;
                     }
 
                     if(response.getType() == Communication.MessageType.NACK){
@@ -220,7 +223,7 @@ public class Client{
 
                         if (response == null) {
                             System.out.println("No response from node.");
-                            break;
+                            continue;
                         }else{
                             List<String[]> closest = parseClosestNodes(response.getInformation()); // IP, PORT, ID
                             for (String[] contact : closest) {
@@ -268,7 +271,7 @@ public class Client{
         for(Bucket bucket : buckets){
             List<String[]> nodes = bucket.getNodes();
             for(String[] nodeContact : nodes){
-                if(!nodeContact.equals(this.selfNodeContact)){
+                if(!nodeContact[2].equals(this.selfNodeContact[2])){
                     Communication ping = new Communication(
                         Communication.MessageType.PING,
                         "are you alive?",

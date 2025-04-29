@@ -61,23 +61,21 @@ public class Server implements Serializable{
             
             switch(msg.getType()){
                 case PING: 
-                    if(!this.routingTable.nodeExist(sender)){
-                        int challenge = Utils.createRandomNumber(16);
-                        pendingChallenges.put(sender[2], challenge);
-                        
-                        newMsg = new Communication(Communication.MessageType.ACK, String.valueOf(challenge), this.selfNodeContact, sender);
-                        output.writeObject(newMsg);
-                        output.flush();
-                    }else{
-                        response = "PING Received.";
-                        System.out.println(response);            
-                        newMsg = new Communication(Communication.MessageType.ACK, response, this.selfNodeContact, sender);
-                        output.writeObject(newMsg);
-                        break; 
-                    }
+                    response = "PING request";
+                    newMsg = new Communication(Communication.MessageType.ACK, response, this.selfNodeContact, sender);
+                    output.writeObject(newMsg);
+                    output.flush();
+                    break;
+                case CHALLENGE_INIT: 
+                    int challenge = Utils.createRandomNumber(16);
+                    pendingChallenges.put(sender[2], challenge);
+                    
+                    newMsg = new Communication(Communication.MessageType.ACK, String.valueOf(challenge), this.selfNodeContact, sender);
+                    output.writeObject(newMsg);
+                    output.flush();
                     break;
                 case CHALLENGE: 
-                    int challenge = pendingChallenges.get(sender[2]);
+                    challenge = pendingChallenges.get(sender[2]);
                     String string = sender[2] + challenge + msg.getInformation();
                     String validateHash = Utils.hashSHA256(string);
                     String prefix = "0".repeat(Utils.CHALLENGE_DIFFICULTY); 
@@ -154,7 +152,7 @@ public class Server implements Serializable{
                         output.writeObject(newMsg);
                         break;
                     }
-                    
+
                     updateActiveAuctions(block);
                     System.out.println("STORE Received!");
                     this.selfNode.getBlockchain().storeBlock(block);

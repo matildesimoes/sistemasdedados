@@ -18,7 +18,7 @@ public class BlockHeader implements Serializable {
 
     public BlockHeader(String prevHash, int nounce, String merkleRoot) {
         this.prevHash = prevHash;
-        this.timestamp = Timestamp.from(Instant.now());
+        this.timestamp = Timestamp.from(Instant.now().truncatedTo(java.time.temporal.ChronoUnit.MILLIS));
         this.nounce = nounce;
         this.merkleRoot = merkleRoot;
 
@@ -50,6 +50,10 @@ public class BlockHeader implements Serializable {
 
     public void setHash(String hash){
         this.hash = hash;
+    }
+
+    public void setPrevHash(String prevHash){
+        this.prevHash = prevHash;
     }
 
 }

@@ -5,7 +5,8 @@ import java.io.Serializable;
 public class Communication implements Serializable {
 
     public enum MessageType {
-        PING, FIND_NODE, ACK, NACK, CHALLENGE, STORE, FIND_VALUE, FIND_BLOCKCHAIN
+        PING, FIND_NODE, ACK, NACK, CHALLENGE, STORE, FIND_VALUE, FIND_BLOCKCHAIN, 
+        CHALLENGE_INIT
     }
 
     private final MessageType type;

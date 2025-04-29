@@ -6,7 +6,7 @@ import main.Utils;
 
 public class MerkleTree{
     public static String getMerkleRoot(List<Transaction> transactions){
-        if(transactions == null || transactions.isEmpty()) return "";
+        if(transactions == null || transactions.isEmpty()) return "null";
 
         List<String> tempHashes = new ArrayList<>();
         for(Transaction transaction : transactions){

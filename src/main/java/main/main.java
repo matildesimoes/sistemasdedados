@@ -10,6 +10,9 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.HashMap;
+
 
 import main.kademlia.*;
 
@@ -65,6 +68,54 @@ public class main{
         }
     }
 
+    public static void printForkTree(Block block, String prefix, boolean hasSibling, Map<String, List<Block>> childrenMap) {
+        BlockHeader header = block.getBlockHeader();
+
+        System.out.println(prefix + "+--------------------------------------------------+");
+        System.out.println(prefix + "| Block:      " + header.getHash());
+        System.out.println(prefix + "| PrevHash:   " + header.getPrevHash() );
+        System.out.println(prefix + "| Timestamp:  " + header.getTimestamp());
+        System.out.println(prefix + "| MerkleRoot: " + header.getMerkleRoot());
+
+
+        List<Transaction> transactions = block.getTransaction();
+        if (transactions != null && !transactions.isEmpty()) {
+            System.out.println(prefix + "| Transactions:");
+            for (Transaction tx : transactions) {
+                System.out.println(prefix + "|    - Type: " + tx.getType() + "; Item: " + tx.getInformation());
+            }
+        } else {
+            System.out.println(prefix + "|  (No transactions)");
+        }
+
+        System.out.println(prefix + "+--------------------------------------------------+");
+
+
+        List<Block> children = childrenMap.getOrDefault(header.getHash(), new ArrayList<>());
+
+        for (int i = 0; i < children.size(); i++) {
+            Block child = children.get(i);
+            boolean isLastChild = (i == children.size() - 1);
+
+            String newPrefix = prefix;
+
+            if (children.size() > 1) {
+                if (i == 0) {
+                    System.out.println(prefix + "|\\");
+                } 
+                newPrefix += "| ";
+            } else if (children.size() == 1) {
+                newPrefix += "  ";
+            }
+
+            printForkTree(child, newPrefix, !isLastChild, childrenMap);
+
+            if (isLastChild && children.size() > 1) {
+                System.out.println(prefix + "|/");
+            }
+        }
+    }
+
     public static void main(String[] args){
 
        /*
@@ -109,15 +160,7 @@ public class main{
         if(bootstrapAddress != null)
             client.joinNetwork(bootstrapAddress);
             
-
-        Scanner in = new Scanner(System.in);
-
         ScheduledFuture<?> future;
-
-        scheduler.scheduleAtFixedRate(() -> {
-            client.checkIfNodeAlive();
-        }, Utils.PING_FREQUENCY, Utils.PING_FREQUENCY, TimeUnit.SECONDS);
-
 
         Runnable task = () -> {
             if (node.transactionPoolSize() == 0) return;
@@ -129,6 +172,12 @@ public class main{
 
         future = scheduler.scheduleAtFixedRate(task, Utils.TRANS_POOL_LIMIT_TIME, Utils.TRANS_POOL_LIMIT_TIME, TimeUnit.SECONDS);
 
+        scheduler.scheduleAtFixedRate(() -> {
+            client.checkIfNodeAlive();
+        }, Utils.PING_FREQUENCY, Utils.PING_FREQUENCY, TimeUnit.SECONDS);
+
+        Scanner in = new Scanner(System.in);
+
         while (true) {
             System.out.println("\n=======================================");
             System.out.println("      PUBLIC LEDGER FOR AUCTIONS");
@@ -137,12 +186,43 @@ public class main{
             System.out.println("2. View Routing Table");
             System.out.println("3. Create new transaction");
             System.out.println("0. Exit");
-            System.out.print("\nChoose an option: ");
+            System.out.println("\nChoose an option: ");
 
             String option = in.nextLine().trim();
 
             switch (option) {
                 case "1":
+                    System.out.println("=== Blockchain ===");
+
+                    // Prepare block lookups
+                    Map<String, Block> blockMap = new HashMap<>();
+                    Map<String, List<Block>> childrenMap = new HashMap<>();
+
+                    List<Chain> chains = node.getBlockchain().getChains();
+
+                    // First, index all blocks
+                    for (Chain chain : chains) {
+                        for (Block block : chain.getBlocks()) {
+                            String hash = block.getBlockHeader().getHash();
+                            String prevHash = block.getBlockHeader().getPrevHash();
+                            blockMap.put(hash, block);
+                            childrenMap.computeIfAbsent(prevHash, k -> new ArrayList<>()).add(block);
+                        }
+                    }
+
+                    // Find roots (genesis blocks or starting points of forks)
+                    List<Block> roots = new ArrayList<>();
+                    for (Block block : blockMap.values()) {
+                        if (!blockMap.containsKey(block.getBlockHeader().getPrevHash())) {
+                            roots.add(block);
+                        }
+                    }
+
+                    // Now print all roots
+                    for (Block root : roots) {
+                        printForkTree(root, "", false, childrenMap);
+                    }
+
                     break;
                 case "2":
                     List<Bucket> buckets = routingTable.getBuckets();
@@ -175,7 +255,7 @@ public class main{
                         System.out.println("3. Make Bid");
                         System.out.println("4. Close Auction");
                         System.out.println("0. Go back");
-                        System.out.print("\nChoose an option: ");
+                        System.out.println("\nChoose an option: ");
                         
                         option = in.nextLine().trim();
 
@@ -290,6 +370,5 @@ public class main{
                     System.out.println("Invalid option. Try again.");
             }
         }
-
     }
 }
