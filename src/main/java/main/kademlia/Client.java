@@ -245,6 +245,9 @@ public class Client{
     public void store(Block block){
 
         List<String[]> nodesWithoutBlock = findValue(block.getBlockHeader().getHash());
+        
+        String signatureBlockHeader = block.getBlockHeader().signBlockHeader(this.selfNode.getPrivateKey());
+        block.getBlockHeader().setSignature(signatureBlockHeader);
 
         String blockString = block.toString();
 
@@ -257,6 +260,10 @@ public class Client{
                     this.selfNodeContact,
                     nodeContact
                 );
+
+                String signatureCommunication = store.signCommunication(this.selfNode.getPrivateKey());
+                store.setSignature(signatureCommunication);
+                
                 Communication response = this.sendMessage(nodeContact, store);
                 if (response == null) {
                     System.out.println("No response from node.");

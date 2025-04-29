@@ -43,7 +43,7 @@ public class Transaction implements Serializable{
         this.timestamp = Timestamp.from(Instant.now());
     }
 
-    private String signTransaction(PrivateKey privateKey){
+    public String signTransaction(PrivateKey privateKey){
         try {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             ObjectOutputStream oos = new ObjectOutputStream(bos);
@@ -68,6 +68,36 @@ public class Transaction implements Serializable{
             throw new RuntimeException("Error signing Transaction!", e);
         }
 
+    }
+
+    public boolean verifyTransactionSignature(String signatureBase64, PublicKey publicKey) {
+        try {
+            // Rebuild the same byte array from the transaction fields
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(bos);
+
+            oos.writeObject(type);
+            oos.writeObject(creator);
+            oos.writeObject(auctionNumber);
+            oos.writeObject(information);
+            oos.writeObject(timestamp);
+
+            oos.flush();
+            byte[] dataToVerify = bos.toByteArray();
+
+            // Initialize signature verification
+            Signature sig = Signature.getInstance("SHA256withRSA");
+            sig.initVerify(publicKey);
+            sig.update(dataToVerify);
+
+            byte[] signatureBytes = Base64.getDecoder().decode(signatureBase64);
+
+            return sig.verify(signatureBytes);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     
