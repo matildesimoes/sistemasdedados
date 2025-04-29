@@ -70,6 +70,10 @@ public class BlockHeader implements Serializable {
         this.signature = signature;
     }
 
+    public String getSignature(){
+        return this.signature;
+    }
+
     public String signBlockHeader(PrivateKey privateKey) {
         try {
             // Serialize the block or block header (depending on what you want to sign)

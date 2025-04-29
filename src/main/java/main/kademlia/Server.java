@@ -142,7 +142,24 @@ public class Server implements Serializable{
                     }
                     break;
                 case STORE:
+
+                    String pubKeyPem =  this.selfNode.loadPublicKeyByPort(Integer.valueOf(sender[1]));
+                    PublicKey pubKey = this.selfNode.parsePublicKey(pubKeyPem);
+
+                    if(!msg.verifyCommunication(msg.getSignature(), pubKey)){
+                        newMsg = new Communication(Communication.MessageType.NACK, "Invalid Communication Signature.", this.selfNodeContact, sender);
+                        output.writeObject(newMsg);
+                        break;
+                    }
+
                     Block block = Block.fromString(msg.getInformation());
+                    BlockHeader blockHeader = block.getBlockHeader();
+                    if(!blockHeader.verifyBlockHeader(blockHeader.getSignature(), pubKey)){
+                        newMsg = new Communication(Communication.MessageType.NACK, "Invalid Block Header Signature.", this.selfNodeContact, sender);
+                        output.writeObject(newMsg);
+                        break;
+
+                    } 
 
                     String newMerkleRoot = MerkleTree.getMerkleRoot(block.getTransaction()); 
 

@@ -50,6 +50,9 @@ public class Communication implements Serializable {
         this.signature = signature;
     }
 
+    public String getSignature(){
+        return this.signature;
+    }
 
     public String signCommunication(PrivateKey privateKey) {
         try {
