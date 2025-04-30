@@ -86,10 +86,10 @@ public class Client{
                     System.out.println("Received response (from "+ receiver[2] +"): "+ response.getInformation());
                     break;
                 case FIND_VALUE: 
-                    String info = message.getInformation();
+                    String info = response.getInformation();
 
                     if (info.startsWith("findPrevBlock|")) {
-                        String prevBlockHash = info.substring("findPrevBlock|".length()).trim();
+                        String prevBlockHash = info.substring("findPrevBlock| ".length()).trim();
 
                         Blockchain selfBlockchain = this.selfNode.getBlockchain();
                         boolean found = false;
@@ -97,6 +97,7 @@ public class Client{
                         for (Chain chain : selfBlockchain.getChains()) {
                             for (Block b : chain.getBlocks()) {
                                 if (b.getBlockHeader().getHash().equals(prevBlockHash)) {
+                                    System.out.println("ola !!! ");
                                     Communication newMsg = new Communication(
                                         Communication.MessageType.STORE,
                                         b.toString(), 
@@ -113,6 +114,7 @@ public class Client{
                             }
                             if (found) break;
                         }
+                        
 
                         if (!found) {
                             Communication newMsg = new Communication(
