@@ -3,6 +3,7 @@ package main.blockchain;
 import java.io.Serializable;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Scanner;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -66,7 +67,6 @@ public class Block implements Serializable{
             return null;
         }
     }
-
 
 
 }

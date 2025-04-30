@@ -12,6 +12,8 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.HashMap;
+import java.sql.Timestamp;
+
 
 
 import main.kademlia.*;
@@ -197,6 +199,7 @@ public class main{
             System.out.println("1. View blockchain");
             System.out.println("2. View Routing Table");
             System.out.println("3. Create new transaction");
+            System.out.println("4. Hacker Menu");
             System.out.println("0. Exit");
             System.out.println("\nChoose an option: ");
 
@@ -374,6 +377,66 @@ public class main{
                         if(option.equals("0")) break;
                     }
                     break;
+                case "4":
+                    while (true) {
+                        System.out.println("\n=======================================");
+                        System.out.println("           HACKER MENU ");
+                        System.out.println("=======================================");
+                        System.out.println("1. Manually create custom block");
+                        System.out.println("0. Go back");
+                        System.out.println("\nChoose an option: ");
+
+                        String hackerOption = in.nextLine().trim();
+
+                        switch (hackerOption) {
+                            case "1":
+                                System.out.print("Enter target node IP: ");
+                                String targetNodeIp = in.nextLine().trim();
+
+                                System.out.print("Enter target node Port: ");
+                                String targetNodePort = in.nextLine().trim();
+
+                                System.out.print("Enter target node ID: ");
+                                String targetNodeId = in.nextLine().trim();
+
+                                Block customBlock = createManualBlock(in, node);
+                                if (customBlock != null) {
+                                    String[] receiver = new String[] { targetNodeIp, targetNodePort, targetNodeId }; 
+
+                                    Communication customMsg = new Communication(
+                                        Communication.MessageType.STORE,
+                                        customBlock.toString(),
+                                        nodeContact,
+                                        receiver
+                                    );
+
+                                    System.out.print("Enter custom base64 signature for Communication (or leave blank or type 'mine' to auto-sign): ");
+                                    String commSig = in.nextLine().trim();
+
+                                    if (commSig.equalsIgnoreCase("mine")) {
+                                        String autoSig = customMsg.signCommunication(node.getPrivateKey());
+                                        customMsg.setSignature(autoSig);
+                                        System.out.println("Communication auto-signed.");
+                                    } else if (!commSig.isEmpty()) {
+                                        customMsg.setSignature(commSig);
+                                        System.out.println("Custom signature applied.");
+                                    } else {
+                                        System.out.println("No Communication signature set (null).");
+                                    }
+
+                                    Communication response = client.sendMessage(receiver, customMsg);
+                                    if (response == null) {
+                                        System.out.println("No response from node.");
+                                    }
+                                }
+
+                                break;
+                            default:
+                                break;
+                        }
+                        if(hackerOption.equals("0")) break;
+                    }
+                    break;
                 case "0":
                     System.out.println("Shutting down...");
                     System.exit(0);
@@ -383,4 +446,74 @@ public class main{
             }
         }
     }
+    public static Block createManualBlock(Scanner in, Node node) {
+        try {
+            System.out.print("Enter prevHash: ");
+            String prevHash = in.nextLine().trim();
+
+            System.out.print("Enter nounce (int): ");
+            int nounce = Integer.parseInt(in.nextLine().trim());
+
+            System.out.print("Enter timestamp (millis) or 'now': ");
+            String tsInput = in.nextLine().trim();
+            long millis = tsInput.equalsIgnoreCase("now")
+                ? System.currentTimeMillis()
+                : Long.parseLong(tsInput);
+            Timestamp timestamp = new Timestamp(millis);
+
+            List<Transaction> transactions = new ArrayList<>();
+            while (true) {
+                System.out.print("Add transaction? (y/n): ");
+                if (!in.nextLine().trim().equalsIgnoreCase("y")) break;
+
+                System.out.print("  - Type (CREATE_AUCTION / START_AUCTION / BID / CLOSE_AUCTION): ");
+                Transaction.Type type = Transaction.Type.valueOf(in.nextLine().trim());
+
+                System.out.print("  - Auction ID (int): ");
+                int auctionId = Integer.parseInt(in.nextLine().trim());
+
+                System.out.print("  - Info: ");
+                String info = in.nextLine().trim();
+
+                Transaction tx = new Transaction(type, node, auctionId, info); 
+                transactions.add(tx);
+            }
+
+            Block block = new Block(transactions, nounce, prevHash);
+            block.getBlockHeader().setTimestamp(timestamp);
+
+
+            System.out.print("Enter custom Merkle Root (or leave blank to keep auto): ");
+            String customMerkleRoot = in.nextLine().trim();
+            if (!customMerkleRoot.isEmpty()) {
+                block.getBlockHeader().setMerkleRoot(customMerkleRoot);
+            }
+            String hash = Utils.hashSHA256(block.getBlockHeader());
+            block.getBlockHeader().setHash(hash);
+
+            boolean storeBlock = node.getBlockchain().storeBlock(block);
+
+            System.out.print("Enter custom base64 signature for BlockHeader (leave blank OR type 'mine' to auto-sign): ");
+            String sig = in.nextLine().trim();
+
+            if (sig.equalsIgnoreCase("mine")) {
+                String autoSignature = block.getBlockHeader().signBlockHeader(node.getPrivateKey());
+                block.getBlockHeader().setSignature(autoSignature);
+                System.out.println("BlockHeader auto-signed.");
+            } else if (!sig.isEmpty()) {
+                block.getBlockHeader().setSignature(sig);
+            } else {
+                System.out.println("No signature set (null).");
+            }
+
+
+            return block;
+        } catch (Exception e) {
+            System.out.println("Error creating custom block: " + e.getMessage());
+            return null;
+        }
+    }
+
 }
+
+

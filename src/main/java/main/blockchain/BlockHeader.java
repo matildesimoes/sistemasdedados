@@ -42,8 +42,15 @@ public class BlockHeader implements Serializable {
         return this.merkleRoot;
     }
 
+    public void setMerkleRoot(String merkleRoot){
+        this.merkleRoot = merkleRoot;
+    }
+
     public Timestamp getTimestamp() {
         return this.timestamp;
+    }
+    public void setTimestamp(Timestamp timestamp) {
+        this.timestamp = timestamp;
     }
 
     public int getNounce() {
@@ -73,6 +80,7 @@ public class BlockHeader implements Serializable {
     public String getSignature(){
         return this.signature;
     }
+
 
     public String signBlockHeader(PrivateKey privateKey) {
         try {

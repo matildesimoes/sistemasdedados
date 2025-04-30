@@ -71,6 +71,7 @@ public class Client{
                         socket.close();
                         System.exit(0);
                     }
+                    System.out.println("Received response (from "+ receiver[2] +"): "+ response.getInformation());
                     break;
                 case FIND_NODE: 
                     String[] groups = response.getInformation().split("-");
@@ -82,6 +83,7 @@ public class Client{
                         if(!routingTable.nodeExist(nodeContact))
                             routingTable.addNodeToBucket(nodeContact);
                     }
+                    System.out.println("Received response (from "+ receiver[2] +"): "+ response.getInformation());
                     break;
                 case FIND_VALUE: 
                     String info = message.getInformation();
@@ -137,7 +139,7 @@ public class Client{
             return response;
 
         } catch (Exception e) {
-            System.err.println("Failed to communicate with node " + receiver[2]);
+            System.err.println("Failed to communicate with node " + receiver[2] + ". Error:  " + e.toString() );
             if (message.getType() == Communication.MessageType.PING) {
                 System.out.println("Node " + receiver[2] + " did not respond to PING. Removing from routing table.");
                 this.selfNode.getRoutingTable().removeNode(receiver[2]);
