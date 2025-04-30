@@ -178,6 +178,18 @@ public class main{
 
         Scanner in = new Scanner(System.in);
 
+        /* Test 
+        Block tempBlock = node.getBlockchain().addBlock(null, node.getBlockchain().getChains().get(0));
+
+        Block tempBlock2 = node.getBlockchain().addBlock(null, node.getBlockchain().getChains().get(0));
+
+        tempBlock2.getBlockHeader().setPrevHash(tempBlock.getBlockHeader().getHash());
+
+        Block tempBlock3 = node.getBlockchain().addBlock(null, node.getBlockchain().getChains().get(0));
+
+        tempBlock3.getBlockHeader().setPrevHash(tempBlock.getBlockHeader().getPrevHash());
+        */
+
         while (true) {
             System.out.println("\n=======================================");
             System.out.println("      PUBLIC LEDGER FOR AUCTIONS");

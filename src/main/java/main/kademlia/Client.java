@@ -20,6 +20,10 @@ import main.blockchain.*;
 import java.net.Socket;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.security.PublicKey;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 
 public class Client{
@@ -40,15 +44,24 @@ public class Client{
         ) {
             output.writeObject(message);
             output.flush();
-            System.out.println("Message sent (to" + receiver[2]+"): " + message.getInformation());
+
+            switch(message.getType()){
+                case STORE:
+                    Block block = Block.fromString(message.getInformation());
+                    System.out.println("Store sent (to " + receiver[2]+"): " + block.getBlockHeader().getHash());
+                    break;
+                default:
+                    System.out.println("Message sent (to " + receiver[2]+"): " + message.getInformation());
+            }
 
             Communication response = (Communication) input.readObject();
-            System.out.println("Received response (from "+ receiver[2] +"): "+ response.getInformation());
 
             switch(response.getType()){
                 case ACK: 
                     if(response.getInformation().equals("CHALLENGE completed.")){
                         this.selfNode.setTimeAlive(Timestamp.from(Instant.now()));
+                    }else if(response.getInformation().equals("PING Received.")){
+                        System.out.println("Node: " + receiver[2] + " is alive!");
                     }
                     break; 
                 case NACK: 
@@ -66,9 +79,60 @@ public class Client{
 
                     for(String group : groups){
                         String[] nodeContact = group.split(",");
-                        routingTable.addNodeToBucket(nodeContact);
+                        if(!routingTable.nodeExist(nodeContact))
+                            routingTable.addNodeToBucket(nodeContact);
                     }
                     break;
+                case FIND_VALUE: 
+                    String info = message.getInformation();
+
+                    if (info.startsWith("findPrevBlock|")) {
+                        String prevBlockHash = info.substring("findPrevBlock|".length()).trim();
+
+                        Blockchain selfBlockchain = this.selfNode.getBlockchain();
+                        boolean found = false;
+
+                        for (Chain chain : selfBlockchain.getChains()) {
+                            for (Block b : chain.getBlocks()) {
+                                if (b.getBlockHeader().getHash().equals(prevBlockHash)) {
+                                    Communication newMsg = new Communication(
+                                        Communication.MessageType.STORE,
+                                        b.toString(), 
+                                        this.selfNodeContact,
+                                        receiver
+                                    );
+                                    String signatureCommunication = newMsg.signCommunication(this.selfNode.getPrivateKey());
+                                    newMsg.setSignature(signatureCommunication);
+                                    output.writeObject(newMsg);
+                                    output.flush();
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if (found) break;
+                        }
+
+                        if (!found) {
+                            Communication newMsg = new Communication(
+                                Communication.MessageType.NACK,
+                                "Value not found.",
+                                this.selfNodeContact,
+                                receiver
+                            );
+                            output.writeObject(newMsg);
+                            output.flush();
+                        }
+                        break;
+                    }
+                        
+                    Block block = Block.fromString(message.getInformation());
+                    System.out.println("Received Value (from " + receiver[2]+"): " + block.getBlockHeader().getHash());
+                    break;
+                case FIND_BLOCKCHAIN:
+                    System.out.println("Received Blockchain (from " + receiver[2] + ")");
+                    break;
+                default:
+                    System.out.println("Received response (from "+ receiver[2] +"): "+ response.getInformation());
             }
             return response;
 

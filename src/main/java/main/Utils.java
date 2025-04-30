@@ -6,6 +6,7 @@ import java.util.Base64;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.security.*;
+import java.security.PublicKey;
 
 
 public class Utils{
@@ -16,6 +17,7 @@ public class Utils{
     public static int TRANS_POOL_LIMIT_LENGTH = 2;
     public static int TRANS_POOL_LIMIT_TIME = 120; // seconds
     public static int BLOCK_CHAIN_LIMIT = 2; // number of blocks required to remove the fork
+    public static int ORPHAN_LIMIT = 3;
 
     public static String createRandomString(int length){
         SecureRandom random = new SecureRandom();

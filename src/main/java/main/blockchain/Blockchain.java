@@ -89,16 +89,17 @@ public class Blockchain implements Serializable{
 
     }
 
-    //TODO: Verificar os 3 ultimos blocos em vez de só o ultimo.
-    public void storeBlock(Block block){
+    public boolean storeBlock(Block block){
         if(this.chains.size()==1){
             BlockHeader latestBlockHeader = this.chains.get(0).getLatest().getBlockHeader();
-            if(block.getBlockHeader().getPrevHash() == latestBlockHeader.getPrevHash()) 
+            if(findRecentMatchingBlock(block, this.chains.get(0), 3)){
                 createNewChain(block);
-            else{
+                return true;
+            }else if(block.getBlockHeader().getPrevHash().equals(latestBlockHeader.getHash())){
                 this.chains.get(0).addCompletedBlock(block);
                 changeHeight(block);
                 trimFork(this.chains.get(0), block);
+                return true;
             }
         }else{
             Chain chain = null;
@@ -114,14 +115,30 @@ public class Blockchain implements Serializable{
                 }
             }
             BlockHeader latestBlockHeader = chain.getLatest().getBlockHeader();
-            if(block.getBlockHeader().getPrevHash() == latestBlockHeader.getPrevHash()) 
+            if(findRecentMatchingBlock(block, chain, 3)){
                 createNewChain(block);
-            else{
+                return true;
+            }else if(block.getBlockHeader().getPrevHash().equals(latestBlockHeader.getHash())){
                 chain.addCompletedBlock(block);
                 changeHeight(block);
                 trimFork(chain, block);
+                return true;
             }
         }
+        return false;
+    }
+
+    private boolean findRecentMatchingBlock(Block block, Chain chain, int depth) {
+        List<Block> blocks = chain.getBlocks(); 
+        int size = blocks.size();
+
+        for (int i = size - 1; i >= Math.max(0, size - depth); i--) {
+            Block recent = blocks.get(i);
+            if (block.getBlockHeader().getPrevHash().equals(recent.getBlockHeader().getHash())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public Blockchain createNewBlockchain(){

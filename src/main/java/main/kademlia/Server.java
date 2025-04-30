@@ -6,6 +6,7 @@ import java.security.PublicKey;
 import java.util.concurrent.*;
 import java.io.Serializable;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.HashSet;
 
@@ -20,6 +21,7 @@ public class Server implements Serializable{
     private final String[] selfNodeContact;
     private final ConcurrentMap<String, Integer> pendingChallenges;
     private final Set<String> activeAuctions;
+    private final List<Block> orphanBlocks = new ArrayList<>();
 
     public Server(String ip, int port, RoutingTable routingTable, Node selfNode){
         this.ip = ip;
@@ -61,7 +63,7 @@ public class Server implements Serializable{
             
             switch(msg.getType()){
                 case PING: 
-                    response = "PING request";
+                    response = "PING Received.";
                     newMsg = new Communication(Communication.MessageType.ACK, response, this.selfNodeContact, sender);
                     output.writeObject(newMsg);
                     output.flush();
@@ -170,9 +172,29 @@ public class Server implements Serializable{
                         break;
                     }
 
+                    System.out.println("Received Store (from " + sender[2] +"): " + block.getBlockHeader().getHash());
+                    boolean blockStored = this.selfNode.getBlockchain().storeBlock(block);
+                    if(!blockStored){
+                        orphanBlocks.add(block);
+                        if(orphanBlocks.size() == Utils.ORPHAN_LIMIT){
+                            System.out.println("Discarded Orphan Blocks.");
+                            orphanBlocks.clear();
+                            break;
+                        }
+                        Communication findPrevBlock =  new Communication(
+                                Communication.MessageType.FIND_VALUE,
+                                "findPrevBlock| " + block.getBlockHeader().getPrevHash(),
+                                this.selfNodeContact,
+                                sender
+                        );
+                        output.writeObject(findPrevBlock);
+                        break;
+                    }
+                    
+                    for(Block orphan : orphanBlocks){
+                        blockStored = this.selfNode.getBlockchain().storeBlock(orphan);
+                    }
                     updateActiveAuctions(block);
-                    System.out.println("STORE Received!");
-                    this.selfNode.getBlockchain().storeBlock(block);
                     newMsg = new Communication(Communication.MessageType.ACK, "STORE completed!", this.selfNodeContact, sender);
                     output.writeObject(newMsg);
                     break;
@@ -181,7 +203,7 @@ public class Server implements Serializable{
                     
                     String blockchainString = selfBlockchain.blockchainToString(selfBlockchain.getChains());
                     
-                    newMsg = new Communication(Communication.MessageType.ACK, blockchainString, this.selfNodeContact, sender);
+                    newMsg = new Communication(Communication.MessageType.FIND_BLOCKCHAIN, blockchainString, this.selfNodeContact, sender);
                     output.writeObject(newMsg);
                     break;
                 default:
