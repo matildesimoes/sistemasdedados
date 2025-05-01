@@ -33,7 +33,6 @@ public class Node implements Serializable{
     private final PrivateKey privateKey;
     private final PublicKey publicKey;
 
-    private final Server server;
     private RoutingTable routingTable;
     private Timestamp timeAlive;
     private Blockchain blockchain;
@@ -60,7 +59,6 @@ public class Node implements Serializable{
         String[] nodeContact = {this.ip, String.valueOf(this.port), this.nodeId};
 
         this.routingTable = new RoutingTable(nodeContact);
-        this.server = new Server(ip,port, this.routingTable, this);
 
         this.timeAlive = null;
         this.transactionPool = new ArrayList<>();

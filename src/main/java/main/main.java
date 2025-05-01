@@ -59,13 +59,13 @@ public class main{
         return null;
     }
 
-    public static void fullPoolLogic(Node node,Client client,Transaction trans, ScheduledFuture<?> future, Runnable task){
+    public static void fullPoolLogic(Node node,PeerNode peer,Transaction trans, ScheduledFuture<?> future, Runnable task){
         node.addToTransactionPool(trans);
         if(node.isTransactionPoolFull()){
             future.cancel(true);
             Block newBlock = node.getBlockchain().createBlock(node.getTransactionPool());
             node.clearTransactionPool();
-            client.store(newBlock);
+            peer.store(newBlock);
             future = scheduler.scheduleAtFixedRate(task, Utils.TRANS_POOL_LIMIT_TIME, Utils.TRANS_POOL_LIMIT_TIME, TimeUnit.SECONDS);
         }
     }
@@ -151,16 +151,16 @@ public class main{
         String[] nodeContact = {ip, String.valueOf(port), node.getNodeId()};
         RoutingTable routingTable = new RoutingTable(nodeContact);
         node.setRoutingTable(routingTable);
-        Server server = new Server(ip, port, routingTable, node);
-        Client client = new Client(node);
         node.getBlockchain().createNewBlockchain();
 
-        new Thread(server::start).start();
+        PeerNode peer = new PeerNode(node);
+        peer.startListener();
 
-        System.out.println("Node started at " + ip + ":" + port+ ".\nNodeId: " + node.getNodeId());
+        System.out.println("Node started at " + ip + ":" + port + ".\nNodeId: " + node.getNodeId());
+
 
         if(bootstrapAddress != null)
-            client.joinNetwork(bootstrapAddress);
+            peer.joinNetwork(bootstrapAddress);
             
         ScheduledFuture<?> future;
 
@@ -169,13 +169,13 @@ public class main{
 
             Block newBlock = node.getBlockchain().createBlock(node.getTransactionPool());
             node.clearTransactionPool();
-            client.store(newBlock);
+            peer.store(newBlock);
         };
 
         future = scheduler.scheduleAtFixedRate(task, Utils.TRANS_POOL_LIMIT_TIME, Utils.TRANS_POOL_LIMIT_TIME, TimeUnit.SECONDS);
 
         scheduler.scheduleAtFixedRate(() -> {
-            client.checkIfNodeAlive();
+            peer.checkIfNodeAlive();
         }, Utils.PING_FREQUENCY, Utils.PING_FREQUENCY, TimeUnit.SECONDS);
 
         Scanner in = new Scanner(System.in);
@@ -287,7 +287,7 @@ public class main{
                                 );
                                 myAuctions.add(item + " (id="+ random + ") ");
                                 System.out.println("Auction created with id: " + random);
-                                fullPoolLogic(node,client,create,future,task);
+                                fullPoolLogic(node,peer,create,future,task);
                                 break;
                             case "2":
                                 for(int i=0; i< myAuctions.size(); i++){
@@ -312,10 +312,10 @@ public class main{
                                 );
                             
                                 System.out.println("Auction started with id: " + id);
-                                fullPoolLogic(node,client,start, future,task);
+                                fullPoolLogic(node,peer,start, future,task);
                                 break;
                             case "3":
-                                Set<String> activeAuctions = server.getActiveAuctions();
+                                Set<String> activeAuctions = peer.getActiveAuctions();
                                 int index = 1;
                                 for (String auction : activeAuctions) {
                                     System.out.println(index + ". " + auction);
@@ -343,7 +343,7 @@ public class main{
                                 );
                             
                                 System.out.println("Bid of " + ammount + " to Auction id: " + id);
-                                fullPoolLogic(node,client,bid, future,task);
+                                fullPoolLogic(node,peer,bid, future,task);
 
                                 break;
                             case "4":
@@ -369,7 +369,7 @@ public class main{
                             
                                 System.out.println("Auction closed with id: " + id);
                                 myAuctions.remove(item + " (id="+ id + ") ");
-                                fullPoolLogic(node,client,close,future,task);
+                                fullPoolLogic(node,peer,close,future,task);
                                 break;
                             default:
                                 break;
@@ -424,7 +424,7 @@ public class main{
                                         System.out.println("No Communication signature set (null).");
                                     }
 
-                                    Communication response = client.sendMessage(receiver, customMsg);
+                                    Communication response = peer.sendMessage(receiver, customMsg);
                                     if (response == null) {
                                         System.out.println("No response from node.");
                                     }

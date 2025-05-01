@@ -1,42 +1,71 @@
 package main.kademlia;
 
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.IOException;
-import java.io.EOFException;
-import java.io.Serializable;
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Queue;
-import java.util.LinkedList;
-
-import main.*;
+import main.Utils;
 import main.blockchain.*;
 
-import java.net.Socket;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
+import java.io.*;
+import java.net.*;
 import java.security.PublicKey;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.*;
+import java.util.concurrent.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-
-
-public class Client{
+public class PeerNode {
     private final Node selfNode;
     private final String[] selfNodeContact;
-    
-   public Client(Node selfNode){
+    private final Set<String> activeAuctions = new HashSet<>();
+    private final List<Block> orphanBlocks = new ArrayList<>();
+    private final ConcurrentMap<String, Integer> pendingChallenges = new ConcurrentHashMap<>();
+    private final MessageHandler messageHandler;
+
+    public PeerNode(Node selfNode) {
         this.selfNode = selfNode;
-        this.selfNodeContact = new String[]{this.selfNode.getNodeId(), String.valueOf(this.selfNode.getNodePort()), this.selfNode.getNodeId()};
+        this.selfNodeContact = new String[]{selfNode.getNodeIp(), String.valueOf(selfNode.getNodePort()), selfNode.getNodeId()};
+        this.messageHandler = new MessageHandler(this, orphanBlocks);
+    }
 
-   }
+    public Set<String> getActiveAuctions(){
+        return this.activeAuctions;
+    }
 
-   public Communication sendMessage(String[] receiver, Communication message) {
+    public Node getSelfNode() {
+        return this.selfNode;
+    }
+
+    public Map<String, Integer> getPendingChallenges() {
+        return this.pendingChallenges;
+    }
+
+
+    public void startListener() {
+        new Thread(() -> {
+            try (ServerSocket serverSocket = new ServerSocket(selfNode.getNodePort())) {
+                System.out.println("[+] Listening on port " + selfNode.getNodePort());
+                while (true) {
+                    Socket socket = serverSocket.accept();
+                    handleIncomingRequest(socket);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
+    private void handleIncomingRequest(Socket socket) {
+        try (
+            ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
+            ObjectInputStream input = new ObjectInputStream(socket.getInputStream());
+        ) {
+            Communication msg = (Communication) input.readObject();
+            messageHandler.handle(msg, output);
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public Communication sendMessage(String[] receiver, Communication message) {
         try (
             Socket socket = new Socket(receiver[0], Integer.valueOf(receiver[1]));
             ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
@@ -45,51 +74,49 @@ public class Client{
             output.writeObject(message);
             output.flush();
 
-            switch(message.getType()){
+            switch (message.getType()) {
                 case STORE:
                     Block block = Block.fromString(message.getInformation());
-                    System.out.println("Store sent (to " + receiver[2]+"): " + block.getBlockHeader().getHash());
+                    System.out.println("Store sent (to " + receiver[2] + "): " + block.getBlockHeader().getHash());
                     break;
                 default:
-                    System.out.println("Message sent (to " + receiver[2]+"): " + message.getInformation());
+                    System.out.println("Message sent (to " + receiver[2] + "): " + message.getInformation());
             }
 
             Communication response = (Communication) input.readObject();
 
-            switch(response.getType()){
-                case ACK: 
-                    if(response.getInformation().equals("CHALLENGE completed.")){
-                        this.selfNode.setTimeAlive(Timestamp.from(Instant.now()));
-                    }else if(response.getInformation().equals("PING Received.")){
+            switch (response.getType()) {
+                case ACK:
+                    if (response.getInformation().equals("CHALLENGE completed.")) {
+                        selfNode.setTimeAlive(Timestamp.from(Instant.now()));
+                    } else if (response.getInformation().equals("PING Received.")) {
                         System.out.println("Node: " + receiver[2] + " is alive!");
                     }
-                    break; 
-                case NACK: 
-                    if(response.getInformation().equals("Wrong challenge response.")){
+                    break;
+                case NACK:
+                    if (response.getInformation().equals("Wrong challenge response.")) {
                         input.close();
                         output.close();
                         socket.close();
                         System.exit(0);
                     }
-                    System.out.println("Received response (from "+ receiver[2] +"): "+ response.getInformation());
+                    System.out.println("Received response (from " + receiver[2] + "): " + response.getInformation());
                     break;
-                case FIND_NODE: 
+                case FIND_NODE:
                     String[] groups = response.getInformation().split("-");
-                    
-                    RoutingTable routingTable = this.selfNode.getRoutingTable();
-
-                    for(String group : groups){
+                    RoutingTable routingTable = selfNode.getRoutingTable();
+                    for (String group : groups) {
                         String[] nodeContact = group.split(",");
-                        if(!routingTable.nodeExist(nodeContact))
+                        if (!routingTable.nodeExist(nodeContact))
                             routingTable.addNodeToBucket(nodeContact);
                     }
-                    System.out.println("Received response (from "+ receiver[2] +"): "+ response.getInformation());
+                    System.out.println("Received response (from " + receiver[2] + "): " + response.getInformation());
                     break;
-                case FIND_VALUE: 
+                case FIND_VALUE:
                     String info = response.getInformation();
 
                     if (info.startsWith("findPrevBlock|")) {
-                        String prevBlockHash = info.substring("findPrevBlock| ".length()).trim();
+                        String prevBlockHash = info.substring("findPrevBlock|".length()).trim();
 
                         Blockchain selfBlockchain = this.selfNode.getBlockchain();
                         boolean found = false;
@@ -97,58 +124,81 @@ public class Client{
                         for (Chain chain : selfBlockchain.getChains()) {
                             for (Block b : chain.getBlocks()) {
                                 if (b.getBlockHeader().getHash().equals(prevBlockHash)) {
-                                    System.out.println("ola !!! ");
-                                    Communication newMsg = new Communication(
+                                    System.out.println("[✓] Found requested block: " + prevBlockHash);
+
+                                    Communication storeMsg = new Communication(
                                         Communication.MessageType.STORE,
-                                        b.toString(), 
-                                        this.selfNodeContact,
+                                        b.toString(),
+                                        selfNodeContact,
                                         receiver
                                     );
-                                    String signatureCommunication = newMsg.signCommunication(this.selfNode.getPrivateKey());
-                                    newMsg.setSignature(signatureCommunication);
-                                    output.writeObject(newMsg);
-                                    output.flush();
+                                    storeMsg.setSignature(storeMsg.signCommunication(selfNode.getPrivateKey()));
+                                    this.sendMessage(receiver,storeMsg);
+
                                     found = true;
                                     break;
                                 }
                             }
                             if (found) break;
                         }
-                        
 
                         if (!found) {
-                            Communication newMsg = new Communication(
+                            System.out.println("[✗] Could not find requested block: " + prevBlockHash);
+
+                            Communication nack = new Communication(
                                 Communication.MessageType.NACK,
-                                "Value not found.",
-                                this.selfNodeContact,
+                                "Block not found: " + prevBlockHash,
+                                selfNodeContact,
                                 receiver
                             );
-                            output.writeObject(newMsg);
-                            output.flush();
+                            this.sendOneWayMessage(receiver,nack);
                         }
+
                         break;
                     }
-                        
-                    Block block = Block.fromString(message.getInformation());
-                    System.out.println("Received Value (from " + receiver[2]+"): " + block.getBlockHeader().getHash());
+
+                    try {
+                        Block receivedBlock = Block.fromString(info);
+                        System.out.println("[✓] Received block from " + receiver[2] + ": " + receivedBlock.getBlockHeader().getHash());
+
+                        boolean stored = this.selfNode.getBlockchain().storeBlock(receivedBlock);
+                        if (!stored) {
+                            System.out.println("[!] Could not store block. Possibly missing parent.");
+                        }
+
+                    } catch (Exception e) {
+                        System.out.println("[!] Value was not a valid block: " + info);
+                    }
+
                     break;
+
                 case FIND_BLOCKCHAIN:
                     System.out.println("Received Blockchain (from " + receiver[2] + ")");
                     break;
                 default:
-                    System.out.println("Received response (from "+ receiver[2] +"): "+ response.getInformation());
+                    System.out.println("Received response (from " + receiver[2] + "): " + response.getInformation());
             }
             return response;
 
         } catch (Exception e) {
-            System.err.println("Failed to communicate with node " + receiver[2] + ". Error:  " + e.toString() );
-            if (message.getType() == Communication.MessageType.PING) {
-                System.out.println("Node " + receiver[2] + " did not respond to PING. Removing from routing table.");
-                this.selfNode.getRoutingTable().removeNode(receiver[2]);
-            }
+            System.err.println("Failed to communicate with node " + receiver[2] + ". Error:  " + e.toString());
             return null;
         }
-    } 
+    }
+
+    public void sendOneWayMessage(String[] receiver, Communication message) {
+        try (
+            Socket socket = new Socket(receiver[0], Integer.parseInt(receiver[1]));
+            ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
+        ) {
+            output.writeObject(message);
+            output.flush();
+            System.out.println("One-way message sent to " + receiver[2] + ": " + message.getType());
+        } catch (Exception e) {
+            System.err.println("Failed to send one-way message: " + e.getMessage());
+        }
+    }
+
     public void joinNetwork(String bootstrapAddress){
 
         String[] parts = bootstrapAddress.split(":");
@@ -255,6 +305,7 @@ public class Client{
         selfBlockchain.setChains(chains);
         
     }
+
 
     public List<String[]> findValue(String hash){
         List<String[]> nodesWithoutBlock = new ArrayList<>(); 
@@ -386,3 +437,4 @@ public class Client{
     }
 
 }
+

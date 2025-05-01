@@ -7,7 +7,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.security.*;
 
-
 public class Utils{
     public static int CHALLENGE_DIFFICULTY = 2;
     public static int BUCKET_SIZE = 3;
