@@ -96,6 +96,7 @@ public class MessageHandler {
                 }
                 Block block = Block.fromString(msg.getInformation());
                 BlockHeader blockHeader = block.getBlockHeader();
+                System.out.println(msg.getInformation());
                 if (!blockHeader.verifyBlockHeader(blockHeader.getSignature(), pubKey)) {
                     newMsg = new Communication(Communication.MessageType.NACK, "Invalid Block Header Signature.", selfNodeContact, sender);
                     output.writeObject(newMsg);

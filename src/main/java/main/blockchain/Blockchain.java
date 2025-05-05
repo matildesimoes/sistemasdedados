@@ -134,7 +134,7 @@ public class Blockchain implements Serializable{
 
         for (int i = size - 1; i >= Math.max(0, size - depth); i--) {
             Block recent = blocks.get(i);
-            if (block.getBlockHeader().getPrevHash().equals(recent.getBlockHeader().getHash())) {
+            if (block.getBlockHeader().getPrevHash().equals(recent.getBlockHeader().getPrevHash())) {
                 return true;
             }
         }
@@ -179,6 +179,10 @@ public class Blockchain implements Serializable{
                 int height = blockchainHeight.getOrDefault(hash, 0);
                 int countAtHeight = blocksPerHeight.getOrDefault(height, 0);
                 int diff = height - newHeight;
+
+                System.out.println("Examining forked chain...");
+                System.out.println("Block: " + hash + " at height " + height + " (count: " + countAtHeight + ")");
+
 
                 // Found a forked height with more than 1 block
                 if (countAtHeight > 1 && diff >= Utils.BLOCK_CHAIN_LIMIT) {

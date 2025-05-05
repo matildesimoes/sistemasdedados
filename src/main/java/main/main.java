@@ -403,6 +403,8 @@ public class main{
                                 if (customBlock != null) {
                                     String[] receiver = new String[] { targetNodeIp, targetNodePort, targetNodeId }; 
 
+                                    System.out.println(customBlock.toString());
+
                                     Communication customMsg = new Communication(
                                         Communication.MessageType.STORE,
                                         customBlock.toString(),
