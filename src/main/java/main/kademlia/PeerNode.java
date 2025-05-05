@@ -2,6 +2,8 @@ package main.kademlia;
 
 import main.Utils;
 import main.blockchain.*;
+import main.blockchain.Blockchain.MatchResult;
+
 
 import java.io.*;
 import java.net.*;
@@ -161,10 +163,10 @@ public class PeerNode {
                         Block receivedBlock = Block.fromString(info);
                         System.out.println("[✓] Received block from " + receiver[2] + ": " + receivedBlock.getBlockHeader().getHash());
 
-                        boolean stored = this.selfNode.getBlockchain().storeBlock(receivedBlock);
-                        if (!stored) {
-                            System.out.println("[!] Could not store block. Possibly missing parent.");
-                        }
+                        Blockchain.MatchResult stored = this.selfNode.getBlockchain().storeBlock(receivedBlock);
+                        
+                        if (stored.equals(MatchResult.MATCH_FOUND)) 
+                            this.selfNode.getBlockchain().recalculateHeights();
 
                     } catch (Exception e) {
                         System.out.println("[!] Value was not a valid block: " + info);
@@ -303,6 +305,7 @@ public class PeerNode {
         Blockchain selfBlockchain = this.selfNode.getBlockchain();
         List<Chain> chains = selfBlockchain.blockchainFromString(response.getInformation());
         selfBlockchain.setChains(chains);
+        selfBlockchain.recalculateHeights();
         
     }
 

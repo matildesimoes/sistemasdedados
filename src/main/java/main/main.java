@@ -17,6 +17,8 @@ import java.sql.Timestamp;
 
 
 import main.kademlia.*;
+import main.blockchain.Blockchain.MatchResult;
+
 
 public class main{
     public static List<String> myAuctions = new ArrayList<>();
@@ -403,8 +405,6 @@ public class main{
                                 if (customBlock != null) {
                                     String[] receiver = new String[] { targetNodeIp, targetNodePort, targetNodeId }; 
 
-                                    System.out.println(customBlock.toString());
-
                                     Communication customMsg = new Communication(
                                         Communication.MessageType.STORE,
                                         customBlock.toString(),
@@ -493,7 +493,7 @@ public class main{
             String hash = Utils.hashSHA256(block.getBlockHeader());
             block.getBlockHeader().setHash(hash);
 
-            boolean storeBlock = node.getBlockchain().storeBlock(block);
+            Blockchain.MatchResult storeBlock = node.getBlockchain().storeBlock(block);
 
             System.out.print("Enter custom base64 signature for BlockHeader (leave blank OR type 'mine' to auto-sign): ");
             String sig = in.nextLine().trim();

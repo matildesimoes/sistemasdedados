@@ -2,6 +2,8 @@ package main.kademlia;
 
 import main.Utils;
 import main.blockchain.*;
+import main.blockchain.Blockchain.MatchResult;
+
 
 import java.io.ObjectOutputStream;
 import java.security.PublicKey;
@@ -96,7 +98,6 @@ public class MessageHandler {
                 }
                 Block block = Block.fromString(msg.getInformation());
                 BlockHeader blockHeader = block.getBlockHeader();
-                System.out.println(msg.getInformation());
                 if (!blockHeader.verifyBlockHeader(blockHeader.getSignature(), pubKey)) {
                     newMsg = new Communication(Communication.MessageType.NACK, "Invalid Block Header Signature.", selfNodeContact, sender);
                     output.writeObject(newMsg);
@@ -109,8 +110,8 @@ public class MessageHandler {
                     break;
                 }
                 System.out.println("Received Store (from " + sender[2] + "): " + blockHeader.getHash());
-                boolean blockStored = selfNode.getBlockchain().storeBlock(block);
-                if (!blockStored) {
+                Blockchain.MatchResult result = selfNode.getBlockchain().storeBlock(block);
+                if (result.equals(MatchResult.NOT_FOUND)) {
                     orphanBlocks.add(block);
                     if (orphanBlocks.size() == Utils.ORPHAN_LIMIT) {
                         System.out.println("Discarded Orphan Blocks.");
@@ -125,13 +126,19 @@ public class MessageHandler {
                     );
                     output.writeObject(findPrevBlock);
                     break;
+                }else if(result.equals(MatchResult.MATCH_FOUND)){
+                    for (Block orphan : orphanBlocks) {
+                        Blockchain.MatchResult stored = selfNode.getBlockchain().storeBlock(orphan);
+                        if(stored.equals(MatchResult.MATCH_FOUND)){
+                            selfNode.getBlockchain().recalculateHeights();
+                        }
+                    }
+                    updateActiveAuctions(block);
+                    newMsg = new Communication(Communication.MessageType.ACK, "STORE completed!", selfNodeContact, sender);
+                    output.writeObject(newMsg);
+                }else if(result.equals(MatchResult.TOO_OLD)) {
+                    System.out.println("[!] Block not stored — too old, skipping FIND_VALUE.");
                 }
-                for (Block orphan : orphanBlocks) {
-                    selfNode.getBlockchain().storeBlock(orphan);
-                }
-                updateActiveAuctions(block);
-                newMsg = new Communication(Communication.MessageType.ACK, "STORE completed!", selfNodeContact, sender);
-                output.writeObject(newMsg);
                 break;
             case FIND_BLOCKCHAIN:
                 selfBlockchain = selfNode.getBlockchain();

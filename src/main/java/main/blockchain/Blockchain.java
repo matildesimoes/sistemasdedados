@@ -35,6 +35,13 @@ public class Blockchain implements Serializable{
         this.blocksPerHeight = new HashMap<>();
     }
 
+    public enum MatchResult {
+        MATCH_FOUND,
+        TOO_OLD,
+        NOT_FOUND
+    }
+
+
     public Block addBlock(List<Transaction> transactions, Chain chain){
         int nounce = 0;
         BlockHeader prevBlockHeader = chain.getBlock(chain.size()-1).getBlockHeader();
@@ -44,26 +51,48 @@ public class Blockchain implements Serializable{
         boolean miner = PoW.miner(newBlockHeader);
 
         BlockHeader latestBlockHeader = chain.getLatest().getBlockHeader();
-        if(newBlockHeader.getPrevHash() == latestBlockHeader.getPrevHash()) 
+        if(newBlockHeader.getPrevHash() == latestBlockHeader.getPrevHash()){
             createNewChain(newBlock);
-        else{
+        }else{
             chain.addCompletedBlock(newBlock);
-            changeHeight(newBlock);
             trimFork(chain, newBlock);
         }
         return newBlock;
     }
 
-    private void changeHeight(Block block) {
+
+    public void recalculateHeights() {
+        blockchainHeight.clear();
+        blocksPerHeight.clear();
+
+        Map<String, Block> hashToBlock = new HashMap<>();
+        for (Chain chain : chains) {
+            for (Block block : chain.getBlocks()) {
+                hashToBlock.put(block.getBlockHeader().getHash(), block);
+            }
+        }
+
+        for (Block block : hashToBlock.values()) {
+            int height = computeHeight(block, hashToBlock);
+
+            String hash = block.getBlockHeader().getHash();
+        }
+    }
+
+    private int computeHeight(Block block, Map<String, Block> hashToBlock) {
         String hash = block.getBlockHeader().getHash();
-        String prevHash = block.getBlockHeader().getPrevHash();
+        if (blockchainHeight.containsKey(hash)) return blockchainHeight.get(hash);
+
+        String prev = block.getBlockHeader().getPrevHash();
         int height = 0;
-        if (prevHash != null && blockchainHeight.containsKey(prevHash)) {
-            height = blockchainHeight.get(prevHash) + 1;
+        if (prev != null && hashToBlock.containsKey(prev)) {
+            height = computeHeight(hashToBlock.get(prev), hashToBlock) + 1;
         }
         blockchainHeight.put(hash, height);
         blocksPerHeight.put(height, blocksPerHeight.getOrDefault(height, 0) + 1);
+        return height;
     }
+
 
     public Block createBlock(List<Transaction> transactions){
         Block newBlock = null;
@@ -89,18 +118,20 @@ public class Blockchain implements Serializable{
 
     }
 
-    public boolean storeBlock(Block block){
+    public MatchResult storeBlock(Block block){
         if(this.chains.size()==1){
             BlockHeader latestBlockHeader = this.chains.get(0).getLatest().getBlockHeader();
-            if(findRecentMatchingBlock(block, this.chains.get(0), 3)){
-                createNewChain(block);
-                return true;
-            }else if(block.getBlockHeader().getPrevHash().equals(latestBlockHeader.getHash())){
+            if(block.getBlockHeader().getPrevHash().equals(latestBlockHeader.getHash())){
                 this.chains.get(0).addCompletedBlock(block);
-                changeHeight(block);
                 trimFork(this.chains.get(0), block);
-                return true;
+                return MatchResult.MATCH_FOUND;
             }
+            MatchResult result = findRecentMatchingBlock(block, this.chains.get(0), 3);
+            if (result == MatchResult.MATCH_FOUND) {
+                createNewChain(block);
+                return MatchResult.MATCH_FOUND;
+            }
+            return result;
         }else{
             Chain chain = null;
             Timestamp firstTimestamp;
@@ -115,30 +146,38 @@ public class Blockchain implements Serializable{
                 }
             }
             BlockHeader latestBlockHeader = chain.getLatest().getBlockHeader();
-            if(findRecentMatchingBlock(block, chain, 3)){
-                createNewChain(block);
-                return true;
-            }else if(block.getBlockHeader().getPrevHash().equals(latestBlockHeader.getHash())){
+            if(block.getBlockHeader().getPrevHash().equals(latestBlockHeader.getHash())){
                 chain.addCompletedBlock(block);
-                changeHeight(block);
                 trimFork(chain, block);
-                return true;
+                return MatchResult.MATCH_FOUND;
             }
+            MatchResult result = findRecentMatchingBlock(block, chain,3);
+            if (result == MatchResult.MATCH_FOUND) {
+                createNewChain(block);
+                return MatchResult.MATCH_FOUND;
+            }
+            return result;
         }
-        return false;
     }
 
-    private boolean findRecentMatchingBlock(Block block, Chain chain, int depth) {
-        List<Block> blocks = chain.getBlocks(); 
+    private MatchResult findRecentMatchingBlock(Block block, Chain chain, int depth) {
+        String prevHash = block.getBlockHeader().getPrevHash();
+        List<Block> blocks = chain.getBlocks();
         int size = blocks.size();
 
-        for (int i = size - 1; i >= Math.max(0, size - depth); i--) {
-            Block recent = blocks.get(i);
-            if (block.getBlockHeader().getPrevHash().equals(recent.getBlockHeader().getPrevHash())) {
-                return true;
+        boolean existsSomewhere = false;
+        for (int i = 0; i < size; i++) {
+            Block b = blocks.get(i);
+            if (b.getBlockHeader().getHash().equals(prevHash)) {
+                existsSomewhere = true;
+                if (i >= size - depth) {
+                    return MatchResult.MATCH_FOUND;
+                }
             }
         }
-        return false;
+
+        if (existsSomewhere) return MatchResult.TOO_OLD;
+        return MatchResult.NOT_FOUND;
     }
 
     public Blockchain createNewBlockchain(){
@@ -153,6 +192,7 @@ public class Blockchain implements Serializable{
 
         genesisChain.addCompletedBlock(genesisBlock);
         this.chains.add(genesisChain);
+        recalculateHeights();
         this.blockchainHeight.put(genesisBlockHeader.getHash(), 0);
         this.blocksPerHeight.put(0, 1);
 
@@ -163,10 +203,11 @@ public class Blockchain implements Serializable{
         Chain newChain = new Chain();
         newChain.addCompletedBlock(block);
         this.chains.add(newChain);  
-        changeHeight(block);
     }
 
     public void trimFork(Chain currentChain, Block newBlock) {
+        recalculateHeights();
+
         String newHash = newBlock.getBlockHeader().getHash();
         int newHeight = blockchainHeight.getOrDefault(newHash, 0);
 
@@ -178,14 +219,14 @@ public class Blockchain implements Serializable{
                 String hash = block.getBlockHeader().getHash();
                 int height = blockchainHeight.getOrDefault(hash, 0);
                 int countAtHeight = blocksPerHeight.getOrDefault(height, 0);
-                int diff = height - newHeight;
+                int diff = Math.abs(height - newHeight);
 
-                System.out.println("Examining forked chain...");
-                System.out.println("Block: " + hash + " at height " + height + " (count: " + countAtHeight + ")");
-
-
+                System.out.println(diff);
+                System.out.println(countAtHeight);
                 // Found a forked height with more than 1 block
                 if (countAtHeight > 1 && diff >= Utils.BLOCK_CHAIN_LIMIT) {
+                    System.out.println("Trimming fork at height: " + height + ".");
+
 
                     // Remove all blocks from this point forward
                     for (int j = chain.size() - 1; j >= i; j--) {
