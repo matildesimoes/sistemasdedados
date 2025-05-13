@@ -7,6 +7,13 @@ import java.io.Serializable;
 import java.util.PriorityQueue;
 import java.util.Comparator;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileInputStream;
+import java.io.ObjectOutputStream;
+import java.io.ObjectInputStream;
+import java.io.IOException;
+
 import main.Utils;
 
 public class RoutingTable implements Serializable{
@@ -57,7 +64,7 @@ public class RoutingTable implements Serializable{
         int range = distance.bitLength() - 1;
 
         this.buckets.get(range).update(nodeContact);
-
+        saveRoutingTable();
     }
 
     public void removeNode(String nodeId){
@@ -67,7 +74,7 @@ public class RoutingTable implements Serializable{
         Bucket b = this.buckets.get(range);
         List<String[]> nodes = b.getNodes();
         nodes.removeIf(node -> node[2].equals(nodeId));
-
+        saveRoutingTable();
     }
 
 
@@ -112,6 +119,35 @@ public class RoutingTable implements Serializable{
 
         return result;
     }
+    public void saveRoutingTable() {
+        try {
+            File dir = new File("data");
+            if (!dir.exists()) dir.mkdir();
+
+            FileOutputStream fileOut = new FileOutputStream("data/routing_table.ser");
+            ObjectOutputStream out = new ObjectOutputStream(fileOut);
+            out.writeObject(this);
+            out.close();
+            fileOut.close();
+        } catch (IOException i) {
+            System.err.println("Error saving routing table: " + i.getMessage());
+        }
+    }
+
+    public static RoutingTable loadRoutingTable(String[] selfNodeId) {
+        try {
+            FileInputStream fileIn = new FileInputStream("data/routing_table.ser");
+            ObjectInputStream in = new ObjectInputStream(fileIn);
+            RoutingTable table = (RoutingTable) in.readObject();
+            in.close();
+            fileIn.close();
+            return table;
+        } catch (Exception e) {
+            System.out.println("No previous routing table found. Starting new.");
+            return new RoutingTable(selfNodeId);
+        }
+    }
+
 
 }
 

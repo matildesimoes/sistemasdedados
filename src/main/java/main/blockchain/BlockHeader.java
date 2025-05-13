@@ -112,7 +112,6 @@ public class BlockHeader implements Serializable {
     public boolean verifyBlockHeader(String signatureBase64, PublicKey publicKey) {
         try {
             if (signatureBase64 == null) {
-                System.err.println("[!] Block header signature is null.");
                 return false;
             }
             // Serialize the block header

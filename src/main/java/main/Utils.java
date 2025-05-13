@@ -16,6 +16,7 @@ public class Utils{
     public static int TRANS_POOL_LIMIT_TIME = 120; // seconds
     public static int BLOCK_CHAIN_LIMIT = 2; // number of blocks required to remove the fork
     public static int ORPHAN_LIMIT = 3;
+    public static double BLOCK_REWARD = 1.0;
 
     public static String createRandomString(int length){
         SecureRandom random = new SecureRandom();

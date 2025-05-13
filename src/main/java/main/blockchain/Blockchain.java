@@ -124,11 +124,13 @@ public class Blockchain implements Serializable{
             if(block.getBlockHeader().getPrevHash().equals(latestBlockHeader.getHash())){
                 this.chains.get(0).addCompletedBlock(block);
                 trimFork(this.chains.get(0), block);
+                this.saveBlockchain();
                 return MatchResult.MATCH_FOUND;
             }
             MatchResult result = findRecentMatchingBlock(block, this.chains.get(0), 3);
             if (result == MatchResult.MATCH_FOUND) {
                 createNewChain(block);
+                this.saveBlockchain();
                 return MatchResult.MATCH_FOUND;
             }
             return result;
@@ -149,11 +151,13 @@ public class Blockchain implements Serializable{
             if(block.getBlockHeader().getPrevHash().equals(latestBlockHeader.getHash())){
                 chain.addCompletedBlock(block);
                 trimFork(chain, block);
+                this.saveBlockchain();
                 return MatchResult.MATCH_FOUND;
             }
             MatchResult result = findRecentMatchingBlock(block, chain,3);
             if (result == MatchResult.MATCH_FOUND) {
                 createNewChain(block);
+                this.saveBlockchain();
                 return MatchResult.MATCH_FOUND;
             }
             return result;
@@ -196,6 +200,7 @@ public class Blockchain implements Serializable{
         this.blockchainHeight.put(genesisBlockHeader.getHash(), 0);
         this.blocksPerHeight.put(0, 1);
 
+        this.saveBlockchain();
         return this;
     }
 
@@ -257,6 +262,14 @@ public class Blockchain implements Serializable{
 
 
     public void saveBlockchain() {
+        File folder = new File("data");
+        File[] files = folder.listFiles((dir, name) -> name.matches("chain_\\d+\\.json"));
+        if (files != null) {
+            for (File f : files) {
+                f.delete();
+            }
+        }
+
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         int index = 1;
         for(Chain chain : this.chains){

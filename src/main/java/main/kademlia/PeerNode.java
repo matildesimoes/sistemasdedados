@@ -31,6 +31,14 @@ public class PeerNode {
         return this.activeAuctions;
     }
 
+    public void addActiveAuctions(Transaction trans){
+        this.activeAuctions.add(trans.getInformation() + "(id= " + trans.getAuctionNumber() + ")");
+    }
+
+    public void removeActiveAuctions(Transaction trans){
+        this.activeAuctions.remove(trans.getInformation() + "(id= " + trans.getAuctionNumber() + ")");
+    }
+
     public Node getSelfNode() {
         return this.selfNode;
     }

@@ -13,7 +13,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.HashMap;
 import java.sql.Timestamp;
-
+import java.io.File;
 
 
 import main.kademlia.*;
@@ -21,53 +21,31 @@ import main.blockchain.Blockchain.MatchResult;
 
 
 public class main{
-    public static List<String> myAuctions = new ArrayList<>();
+    public static Map<Integer, String> myAuctions = new HashMap<>();
     public static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-
-    /*
-    public static void createTestBlockchain(Blockchain blockchain, List<Transaction> trans) {
-        User user1 = new User();
-        User user2 = new User();
-        User user3 = new User();
-        User user4 = new User();
-
-        Transaction trans1 = new Transaction(user1, user2, "ricardo");
-        Transaction trans2 = new Transaction(user4, user3, "maria");
-        Transaction trans3 = new Transaction(user3, user1, "matilde");
-
-        trans.add(trans1);
-        trans.add(trans2);
-        trans.add(trans3);
-
-        Chain mainChain = blockchain.getChains().get(0);
-
-        blockchain.addBlock(trans, mainChain);
-
-        blockchain.saveBlockchain();
-    }
-    */
-    public static String checkAuctionId(int id){
-        String item = null;
-        for (String i : myAuctions) {
-            String[] p = i.split("id=");
-            if (p.length > 1) {
-                String idPart = p[1].split("\\)")[0];
-                if (Integer.parseInt(idPart) == id) {
-                    item = i.split(" \\(id=")[0]; 
-                    return item;
-                }
-            }
-        }
-        return null;
-    }
 
     public static void fullPoolLogic(Node node,PeerNode peer,Transaction trans, ScheduledFuture<?> future, Runnable task){
         node.addToTransactionPool(trans);
         if(node.isTransactionPoolFull()){
             future.cancel(true);
+
+            List<Transaction> transactions = node.getTransactionPool();
             Block newBlock = node.getBlockchain().createBlock(node.getTransactionPool());
             node.clearTransactionPool();
             peer.store(newBlock);
+
+            // Check for CLOSE_AUCTION transactions and print the winner
+            for (Transaction t : transactions) {
+                if (t.getType() == Transaction.Type.CLOSE_AUCTION) {
+                    int auctionId = t.getAuctionNumber();
+                    String winnerId = MessageHandler.getAuctionWinner(node, auctionId);
+                    if (winnerId != null) {
+                        System.out.println("Winner of auction " + auctionId + ": " + winnerId);
+                    } else {
+                        System.out.println("No valid bids found for auction " + auctionId);
+                    }
+                }
+            }
             future = scheduler.scheduleAtFixedRate(task, Utils.TRANS_POOL_LIMIT_TIME, Utils.TRANS_POOL_LIMIT_TIME, TimeUnit.SECONDS);
         }
     }
@@ -122,23 +100,6 @@ public class main{
 
     public static void main(String[] args){
 
-       /*
-       //Blockchain blockchain = Blockchain.createNewBlockchain(); 
-        List<Transaction> trans = new ArrayList<>();
-       //createTestBlockchain(blockchain,trans);
-
-       Blockchain blockchain = Blockchain.loadBlockchain();
-        User user3 = new User();
-        User user4 = new User();
-
-        Transaction trans1 = new Transaction(user3, user4, "ricardo");
-        Chain mainChain = blockchain.getChains().get(0);
-        trans.add(trans1);
-        blockchain.addBlock(trans,mainChain);
-
-        blockchain.saveBlockchain();
-        */
-
         if (args.length < 1) {
             System.out.println("Usage: ./run.sh <myIp:myPort> <bootstrapIP:bootstrapPort>");
             return;
@@ -151,9 +112,18 @@ public class main{
 
         Node node = new Node(ip, port);
         String[] nodeContact = {ip, String.valueOf(port), node.getNodeId()};
-        RoutingTable routingTable = new RoutingTable(nodeContact);
+        RoutingTable routingTable = RoutingTable.loadRoutingTable(nodeContact);
         node.setRoutingTable(routingTable);
-        node.getBlockchain().createNewBlockchain();
+
+        File firstChain = new File("data/chain_1.json");
+        if (firstChain.exists()) {
+            node.getBlockchain().loadBlockchain();
+            System.out.println("Loaded existing blockchain from disk.");
+        } else {
+            node.getBlockchain().createNewBlockchain();
+            System.out.println("No local blockchain found. Created new one.");
+        }
+
 
         PeerNode peer = new PeerNode(node);
         peer.startListener();
@@ -176,10 +146,6 @@ public class main{
 
         future = scheduler.scheduleAtFixedRate(task, Utils.TRANS_POOL_LIMIT_TIME, Utils.TRANS_POOL_LIMIT_TIME, TimeUnit.SECONDS);
 
-        scheduler.scheduleAtFixedRate(() -> {
-            peer.checkIfNodeAlive();
-        }, Utils.PING_FREQUENCY, Utils.PING_FREQUENCY, TimeUnit.SECONDS);
-
         Scanner in = new Scanner(System.in);
 
         /* Test 
@@ -201,7 +167,8 @@ public class main{
             System.out.println("1. View blockchain");
             System.out.println("2. View Routing Table");
             System.out.println("3. Create new transaction");
-            System.out.println("4. Hacker Menu");
+            System.out.println("4. View Total Reward");
+            System.out.println("5. Hacker Menu");
             System.out.println("0. Exit");
             System.out.println("\nChoose an option: ");
 
@@ -287,25 +254,23 @@ public class main{
                                     random,
                                     item
                                 );
-                                myAuctions.add(item + " (id="+ random + ") ");
+                                myAuctions.put(random, item);
                                 System.out.println("Auction created with id: " + random);
                                 fullPoolLogic(node,peer,create,future,task);
                                 break;
                             case "2":
-                                for(int i=0; i< myAuctions.size(); i++){
-                                    System.out.println((i+1) + ". " + myAuctions.get(i));
+                                for (Map.Entry<Integer, String> entry : myAuctions.entrySet()) {
+                                    System.out.println("- " + entry.getValue() + " (id=" + entry.getKey() + ")");
                                 }
 
                                 System.out.print("Auction id: ");
-                                int id = Integer.valueOf(in.nextLine().trim());
-                                item = checkAuctionId(id);
-
-                                if(item == null){
+                                int id = Integer.parseInt(in.nextLine().trim());
+                                item = myAuctions.get(id);
+                                if (item == null) {
                                     System.out.println("Invalid Auction id");
                                     break;
                                 }
                         
-
                                 Transaction start = new Transaction(
                                     Transaction.Type.START_AUCTION,
                                     node,   
@@ -324,13 +289,19 @@ public class main{
                                     index++;
                                 }
                                   
-
                                 System.out.print("Auction id: ");
-                                id = Integer.valueOf(in.nextLine().trim());
-                                item = checkAuctionId(id);
+                                id = Integer.parseInt(in.nextLine().trim());
 
-                                if(item == null){
-                                    System.out.println("Invalid Auction id");
+                                item = null;
+                                for (String auctionStr : activeAuctions) {
+                                    if (auctionStr.matches(".*\\(id=\\s*" + id + "\\)")) {
+                                        item = auctionStr.split(" \\(id=")[0].trim();; 
+                                        break;
+                                    }
+                                }
+
+                                if (item == null) {
+                                    System.out.println("Invalid Auction id or auction not active.");
                                     break;
                                 }
 
@@ -349,15 +320,14 @@ public class main{
 
                                 break;
                             case "4":
-                                for(int i=0; i< myAuctions.size(); i++){
-                                    System.out.println((i+1) + ". " + myAuctions.get(i));
+                                for (Map.Entry<Integer, String> entry : myAuctions.entrySet()) {
+                                    System.out.println("- " + entry.getValue() + " (id=" + entry.getKey() + ")");
                                 }
 
                                 System.out.print("Auction id: ");
-                                id = Integer.valueOf(in.nextLine().trim());
-                                item = checkAuctionId(id);
-
-                                if(item == null){
+                                id = Integer.parseInt(in.nextLine().trim());
+                                item = myAuctions.get(id);
+                                if (item == null) {
                                     System.out.println("Invalid Auction id");
                                     break;
                                 }
@@ -370,8 +340,9 @@ public class main{
                                 );
                             
                                 System.out.println("Auction closed with id: " + id);
-                                myAuctions.remove(item + " (id="+ id + ") ");
+                                myAuctions.remove(id);
                                 fullPoolLogic(node,peer,close,future,task);
+
                                 break;
                             default:
                                 break;
@@ -380,6 +351,21 @@ public class main{
                     }
                     break;
                 case "4":
+                    double reward = 0.0;
+                    for (Chain chain : node.getBlockchain().getChains()) {
+                        for (Block block : chain.getBlocks()) {
+                            BlockHeader header = block.getBlockHeader();
+                            String signature = header.getSignature();
+
+                            if (header.verifyBlockHeader(signature, node.getPublicKey())) {
+                                reward += Utils.BLOCK_REWARD;
+                            }
+                        }
+                    }
+                    System.out.println("Total reward for this node: " + reward);
+                    break;
+                    
+                case "5":
                     while (true) {
                         System.out.println("\n=======================================");
                         System.out.println("           HACKER MENU ");

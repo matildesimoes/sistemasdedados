@@ -8,6 +8,8 @@ import main.blockchain.Blockchain.MatchResult;
 import java.io.ObjectOutputStream;
 import java.security.PublicKey;
 import java.util.List;
+import java.sql.Timestamp;
+
 
 public class MessageHandler {
     private final Node selfNode;
@@ -151,13 +153,70 @@ public class MessageHandler {
         }
     }
 
+    public static String getAuctionWinner(Node selfNode, int auctionId){
+        String winnerId = null;
+        int highestBid = -1;
+        Timestamp closeTimestamp = null;
+
+        List<Chain> chains = selfNode.getBlockchain().getChains();
+
+        for (Chain chain : chains) {
+            for (Block block : chain.getBlocks()) {
+                for (Transaction trans : block.getTransaction()) {
+                    if (trans.getType() == Transaction.Type.CLOSE_AUCTION && trans.getAuctionNumber() == auctionId) {
+                        closeTimestamp = trans.getTimestamp();
+                        break;
+                    }
+                }
+                if (closeTimestamp != null) break;
+            }
+            if (closeTimestamp != null) break;
+        }
+
+        if (closeTimestamp == null) {
+            System.out.println("Could not determine closing timestamp for auction id: " + auctionId);
+            return null;
+        }
+
+        for (Chain chain : chains) {
+            for (Block block : chain.getBlocks()) {
+                if (block.getBlockHeader().getTimestamp().after(closeTimestamp)) continue;
+
+                for (Transaction trans : block.getTransaction()) {
+                    if (trans.getType() == Transaction.Type.BID && trans.getAuctionNumber() == auctionId) {
+                        try {
+                            String info = trans.getInformation(); // Ex: "Bid ammount: 300"
+                            int bidValue = Integer.parseInt(info.replaceAll("[^0-9]", ""));
+                            if (bidValue > highestBid) {
+                                highestBid = bidValue;
+                                winnerId = trans.getCreator().getNodeId();
+                            }
+                        } catch (Exception e) {
+                        }
+                    }
+                }
+            }
+        }
+
+        return winnerId;
+        
+    }
+
     private void updateActiveAuctions(Block block) {
         for (Transaction trans : block.getTransaction()) {
             if (trans.getType().equals(Transaction.Type.START_AUCTION)) {
+                peerNode.addActiveAuctions(trans);
                 System.out.println("Auction started with id: " + trans.getAuctionNumber());
             }
             if (trans.getType().equals(Transaction.Type.CLOSE_AUCTION)) {
+                peerNode.removeActiveAuctions(trans);
                 System.out.println("Auction closed with id: " + trans.getAuctionNumber());
+                String winner = getAuctionWinner(this.selfNode, trans.getAuctionNumber());
+                if (winner != null) {
+                    System.out.println("Auction (id " + trans.getAuctionNumber() + ") winner is: " + winner);
+                } else {
+                    System.out.println("No valid bids found for Auction id: " + trans.getAuctionNumber());
+                }
             }
         }
     }
