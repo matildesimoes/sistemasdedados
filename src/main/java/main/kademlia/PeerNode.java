@@ -209,7 +209,7 @@ public class PeerNode {
         }
     }
 
-    public void joinNetwork(String bootstrapAddress){
+    public void joinNetwork(String bootstrapAddress,boolean skipFindBlockchain, boolean skipFindNode){
 
         String[] parts = bootstrapAddress.split(":");
         String bootstrapIp = parts[0];
@@ -219,101 +219,117 @@ public class PeerNode {
 
         String[] bootstrapNodeContact = {bootstrapIp, String.valueOf(bootstrapPort), bootstrapNode.getNodeId()};
 
+        File challengeFile = new File("data/challenge.txt");
+        String nounceStr;
 
-        Communication ping = new Communication(
-            Communication.MessageType.CHALLENGE_INIT,
-            "join?",
-            this.selfNodeContact,
-            bootstrapNodeContact
-        );
+        if (challengeFile.exists()) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(challengeFile))) {
+                nounceStr = reader.readLine();
+                System.out.println("Loaded stored challenge solution: " + nounceStr);
+            } catch (IOException e) {
+                System.err.println("Error reading stored challenge: " + e.getMessage());
+                return;
+            }
+        } else {
 
+            int nounce =  Utils.createRandomNumber(999999);
+            String string = this.selfNode.getNodeId() + nounce;
+            String hash = Utils.hashSHA256(string);
+            String prefix = "0".repeat(Utils.CHALLENGE_DIFFICULTY);
+            while(!hash.startsWith(prefix)){
+                nounce =  Utils.createRandomNumber(999999);
+                string = this.selfNode.getNodeId() + nounce;
+                hash = Utils.hashSHA256(string);
+            }
+            
+            nounceStr = String.valueOf(nounce);
 
-        Communication response = this.sendMessage(bootstrapNodeContact, ping);
-
-        if (response == null) {
-            System.out.println("No response from bootstrap node.");
-            return;
-        }
-
-        int nounce =  Utils.createRandomNumber(999999);
-        String string = this.selfNode.getNodeId() + response.getInformation() + nounce;
-        String hash = Utils.hashSHA256(string);
-        String prefix = "0".repeat(Utils.CHALLENGE_DIFFICULTY);
-        while(!hash.startsWith(prefix)){
-            nounce =  Utils.createRandomNumber(999999);
-            string = this.selfNode.getNodeId() + response.getInformation() + nounce;
-            hash = Utils.hashSHA256(string);
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(challengeFile))) {
+                writer.write(nounceStr);
+            } catch (IOException e) {
+                System.err.println("Error saving challenge: " + e.getMessage());
+            }
         }
 
         Communication challenge = new Communication(
             Communication.MessageType.CHALLENGE,
-            String.valueOf(nounce),
+            nounceStr,
             this.selfNodeContact,
             bootstrapNodeContact
         );
 
-        response = this.sendMessage(bootstrapNodeContact, challenge);
+        Communication response = this.sendMessage(bootstrapNodeContact, challenge);
 
         if (response == null) {
             System.out.println("No response from bootstrap node.");
             return;
         }
 
-        Set<String> visited = new HashSet<>();
-        Queue<String[]> toVisit = new LinkedList<>();
+        if (!skipFindNode) {
+            System.out.println("Starting node discovery (FIND_NODE)...");
+            Set<String> visited = new HashSet<>();
+            Queue<String[]> toVisit = new LinkedList<>();
 
-        toVisit.add(bootstrapNodeContact);
-        
-        int steps = 0;
-        while (!toVisit.isEmpty() && steps < Utils.RECURSIVE_FIND_NODE) {
-            String[] current = toVisit.poll();
-            String nodeId = current[2];
+            toVisit.add(bootstrapNodeContact);
+            
+            int steps = 0;
+            while (!toVisit.isEmpty() && steps < Utils.RECURSIVE_FIND_NODE) {
+                String[] current = toVisit.poll();
+                String nodeId = current[2];
 
-            if (visited.contains(nodeId)) continue;
-            visited.add(nodeId);
+                if (visited.contains(nodeId)) continue;
+                visited.add(nodeId);
 
-            Communication find = new Communication(
-                Communication.MessageType.FIND_NODE,
-                this.selfNode.getNodeIp() + "," + String.valueOf(this.selfNode.getNodePort()) + "," + this.selfNode.getNodeId(),
-                this.selfNodeContact,
-                current
-            );
+                Communication find = new Communication(
+                    Communication.MessageType.FIND_NODE,
+                    this.selfNode.getNodeIp() + "," + String.valueOf(this.selfNode.getNodePort()) + "," + this.selfNode.getNodeId(),
+                    this.selfNodeContact,
+                    current
+                );
 
-            response = this.sendMessage(current, find);
+                response = this.sendMessage(current, find);
 
-            if (response != null) {
-                List<String[]> closest = parseClosestNodes(response.getInformation()); // IP, PORT, ID
-                for (String[] contact : closest) {
-                    String contactId = contact[2];
-                    if (!visited.contains(contactId) && !selfNode.getRoutingTable().nodeExist(contact)) {
-                        toVisit.add(contact);
+                if (response != null) {
+                    List<String[]> closest = parseClosestNodes(response.getInformation()); // IP, PORT, ID
+                    for (String[] contact : closest) {
+                        String contactId = contact[2];
+                        if (!visited.contains(contactId) && !selfNode.getRoutingTable().nodeExist(contact)) {
+                            toVisit.add(contact);
+                        }
                     }
                 }
+                steps++;
             }
-            steps++;
+        } else {
+            System.out.println("Skipped FIND_NODE — routing table loaded from disk.");
         }
 
-        RoutingTable selfRoutingTable = this.selfNode.getRoutingTable();
-        List<String[]> closest = selfRoutingTable.findClosest(this.selfNodeContact[2], 1);
+        if (!skipFindBlockchain) {
+            System.out.println("Requesting blockchain from bootstrap node...");
+            RoutingTable selfRoutingTable = this.selfNode.getRoutingTable();
+            List<String[]> closest = selfRoutingTable.findClosest(this.selfNodeContact[2], 1);
 
-        Communication findBlockchain = new Communication(
-            Communication.MessageType.FIND_BLOCKCHAIN,
-            "I want your blockchain :)",
-            this.selfNodeContact,
-            closest.get(0)
-        );
+            Communication findBlockchain = new Communication(
+                Communication.MessageType.FIND_BLOCKCHAIN,
+                "I want your blockchain :)",
+                this.selfNodeContact,
+                closest.get(0)
+            );
 
-        response = this.sendMessage(bootstrapNodeContact, findBlockchain);
+            response = this.sendMessage(bootstrapNodeContact, findBlockchain);
 
-        if (response == null) {
-            System.out.println("No response from bootstrap node.");
-            return;
+            if (response == null) {
+                System.out.println("No response from bootstrap node.");
+                return;
+            }
+
+            Blockchain selfBlockchain = this.selfNode.getBlockchain();
+            List<Chain> chains = selfBlockchain.blockchainFromString(response.getInformation());
+            selfBlockchain.setChains(chains);
+            selfBlockchain.recalculateHeights();
+        } else {
+            System.out.println("Skipped FIND_BLOCKCHAIN — blockchain already loaded.");
         }
-
-        Blockchain selfBlockchain = this.selfNode.getBlockchain();
-        List<Chain> chains = selfBlockchain.blockchainFromString(response.getInformation());
-        selfBlockchain.setChains(chains);
-        selfBlockchain.recalculateHeights();
         
     }
 

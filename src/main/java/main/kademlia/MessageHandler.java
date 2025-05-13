@@ -37,15 +37,8 @@ public class MessageHandler {
                 newMsg = new Communication(Communication.MessageType.ACK, "PING Received.", selfNodeContact, sender);
                 output.writeObject(newMsg);
                 break;
-            case CHALLENGE_INIT:
-                int challenge = Utils.createRandomNumber(16);
-                peerNode.getPendingChallenges().put(sender[2], challenge);
-                newMsg = new Communication(Communication.MessageType.ACK, String.valueOf(challenge), selfNodeContact, sender);
-                output.writeObject(newMsg);
-                break;
             case CHALLENGE:
-                challenge = peerNode.getPendingChallenges().getOrDefault(sender[2], -1);
-                String str = sender[2] + challenge + msg.getInformation();
+                String str = sender[2] + msg.getInformation();
                 String validateHash = Utils.hashSHA256(str);
                 String prefix = "0".repeat(Utils.CHALLENGE_DIFFICULTY);
                 if (!validateHash.startsWith(prefix)) {

@@ -115,6 +115,8 @@ public class main{
         RoutingTable routingTable = RoutingTable.loadRoutingTable(nodeContact);
         node.setRoutingTable(routingTable);
 
+        boolean routingWasLoaded = new File("data/routing_table.ser").exists();
+
         File firstChain = new File("data/chain_1.json");
         if (firstChain.exists()) {
             node.getBlockchain().loadBlockchain();
@@ -124,6 +126,7 @@ public class main{
             System.out.println("No local blockchain found. Created new one.");
         }
 
+        boolean blockchainWasLoaded = firstChain.exists();
 
         PeerNode peer = new PeerNode(node);
         peer.startListener();
@@ -132,7 +135,7 @@ public class main{
 
 
         if(bootstrapAddress != null)
-            peer.joinNetwork(bootstrapAddress);
+            peer.joinNetwork(bootstrapAddress, routingWasLoaded, blockchainWasLoaded);
             
         ScheduledFuture<?> future;
 
