@@ -389,7 +389,6 @@ public class PeerNode {
     }
 
     public void store(Block block){
-
         List<String[]> nodesWithoutBlock = findValue(block.getBlockHeader().getHash());
         
         String signatureBlockHeader = block.getBlockHeader().signBlockHeader(this.selfNode.getPrivateKey());
@@ -417,6 +416,8 @@ public class PeerNode {
                 }
             }
         }
+
+
     }
 
     public void checkIfNodeAlive(){

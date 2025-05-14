@@ -129,6 +129,37 @@ public class MessageHandler {
                         }
                     }
                     updateActiveAuctions(block);
+                    for (Transaction t : block.getTransaction()) {
+                        if (t.getType() == Transaction.Type.CLOSE_AUCTION) {
+                            int auctionId = t.getAuctionNumber();
+                            int closeHeight = this.selfNode.getBlockchain().getBlockHeight(block.getBlockHeader().getHash());
+                            int targetHeight = closeHeight + Utils.BLOCK_CHAIN_LIMIT;
+
+                            
+                            // Spawn a thread to wait for confirmation
+                            new Thread(() -> {
+                                System.out.println("Waiting to confirm winner for Auction ID " + auctionId + " (height " + targetHeight + ")...");
+                                while (true) {
+                                    int currentHeight = this.selfNode.getBlockchain().getLatestHeight();
+                                    if (currentHeight >= targetHeight) {
+                                        String winner = MessageHandler.getAuctionWinner(this.selfNode, auctionId);
+                                        if (winner != null) {
+                                            System.out.println("Auction (id" + auctionId + ") winner is: " + winner);
+                                        } else {
+                                            System.out.println("Auction (id" + auctionId + ") had no valid bids.");
+                                        }
+                                        break;
+                                    }
+
+                                    try {
+                                        Thread.sleep(1000); // Check every second
+                                    } catch (InterruptedException e) {
+                                        break;
+                                    }
+                                }
+                            }).start();
+                        }
+                    }
                     newMsg = new Communication(Communication.MessageType.ACK, "STORE completed!", selfNodeContact, sender);
                     output.writeObject(newMsg);
                 }else if(result.equals(MatchResult.TOO_OLD)) {
@@ -204,12 +235,6 @@ public class MessageHandler {
             if (trans.getType().equals(Transaction.Type.CLOSE_AUCTION)) {
                 peerNode.removeActiveAuctions(trans);
                 System.out.println("Auction closed with id: " + trans.getAuctionNumber());
-                String winner = getAuctionWinner(this.selfNode, trans.getAuctionNumber());
-                if (winner != null) {
-                    System.out.println("Auction (id " + trans.getAuctionNumber() + ") winner is: " + winner);
-                } else {
-                    System.out.println("No valid bids found for Auction id: " + trans.getAuctionNumber());
-                }
             }
         }
     }

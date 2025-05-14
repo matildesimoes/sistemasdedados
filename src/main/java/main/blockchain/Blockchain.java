@@ -41,6 +41,15 @@ public class Blockchain implements Serializable{
         NOT_FOUND
     }
 
+    public int getBlockHeight(String hash) {
+        return blockchainHeight.getOrDefault(hash, -1);
+    }
+
+    public int getLatestHeight() {
+        return blockchainHeight.values().stream().max(Integer::compareTo).orElse(0);
+    }
+
+
 
     public Block addBlock(List<Transaction> transactions, Chain chain){
         int nounce = 0;
@@ -332,5 +341,7 @@ public class Blockchain implements Serializable{
     public void setChains(List<Chain> chains){
         this.chains =chains;
     }
+
+
 
 }

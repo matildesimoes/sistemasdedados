@@ -28,22 +28,41 @@ public class main{
         node.addToTransactionPool(trans);
         if(node.isTransactionPoolFull()){
             future.cancel(true);
-
-            List<Transaction> transactions = node.getTransactionPool();
             Block newBlock = node.getBlockchain().createBlock(node.getTransactionPool());
             node.clearTransactionPool();
             peer.store(newBlock);
 
             // Check for CLOSE_AUCTION transactions and print the winner
-            for (Transaction t : transactions) {
+            for (Transaction t : newBlock.getTransaction()) {
                 if (t.getType() == Transaction.Type.CLOSE_AUCTION) {
                     int auctionId = t.getAuctionNumber();
-                    String winnerId = MessageHandler.getAuctionWinner(node, auctionId);
-                    if (winnerId != null) {
-                        System.out.println("Winner of auction " + auctionId + ": " + winnerId);
-                    } else {
-                        System.out.println("No valid bids found for auction " + auctionId);
-                    }
+                    String blockHash = newBlock.getBlockHeader().getHash();
+                    int closeHeight = node.getBlockchain().getBlockHeight(blockHash);
+                    int targetHeight = closeHeight + Utils.BLOCK_CHAIN_LIMIT;
+
+                    
+                    // Spawn a thread to wait for confirmation
+                    new Thread(() -> {
+                        System.out.println("Waiting to confirm winner for Auction ID " + auctionId + " (height " + targetHeight + ")...");
+                        while (true) {
+                            int currentHeight = node.getBlockchain().getLatestHeight();
+                            if (currentHeight >= targetHeight) {
+                                String winner = MessageHandler.getAuctionWinner(node, auctionId);
+                                if (winner != null) {
+                                    System.out.println("Auction (id" + auctionId + ") winner is: " + winner);
+                                } else {
+                                    System.out.println("Auction (id" + auctionId + ") had no valid bids.");
+                                }
+                                break;
+                            }
+
+                            try {
+                                Thread.sleep(1000); // Check every second
+                            } catch (InterruptedException e) {
+                                break;
+                            }
+                        }
+                    }).start();
                 }
             }
             future = scheduler.scheduleAtFixedRate(task, Utils.TRANS_POOL_LIMIT_TIME, Utils.TRANS_POOL_LIMIT_TIME, TimeUnit.SECONDS);
