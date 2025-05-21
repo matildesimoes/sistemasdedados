@@ -14,7 +14,7 @@ public class TransactionTest {
 
     @BeforeEach
     public void setUp() {
-        creator = new Node("127.0.0.1", 8050);
+        creator = new Node("127.0.0.1", 5001);
     }
 
     @Test

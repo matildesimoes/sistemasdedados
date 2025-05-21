@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Scanner;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
+
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -65,6 +67,25 @@ public class Block implements Serializable{
         } catch (Exception e) {
             System.out.println("Error reading JSON: " + e.getMessage());
             return null;
+        }
+    }
+    public static String serializeBlockList(List<Block> blocks) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.writeValueAsString(blocks);
+        } catch (Exception e) {
+            System.err.println("Error serializing blocks: " + e.getMessage());
+            return "[]";
+        }
+    }
+
+    public static List<Block> parseBlockList(String json) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.readValue(json, new TypeReference<List<Block>>() {});
+        } catch (Exception e) {
+            System.err.println("Error parsing block list: " + e.getMessage());
+            return new ArrayList<>();
         }
     }
 

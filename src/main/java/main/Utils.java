@@ -17,6 +17,10 @@ public class Utils{
     public static int BLOCK_CHAIN_LIMIT = 2; // number of blocks required to remove the fork
     public static int ORPHAN_LIMIT = 3;
     public static double BLOCK_REWARD = 1.0;
+    public static final int RECENT_BLOCK_PEERS = 3;
+    public static final int PEER_MAJORITY_THRESHOLD = 2;
+    public static final int CHAIN_LINK_DEPTH_LIMIT = 10;
+    
 
     public static String createRandomString(int length){
         SecureRandom random = new SecureRandom();

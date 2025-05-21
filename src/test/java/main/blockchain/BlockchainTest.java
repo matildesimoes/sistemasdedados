@@ -19,7 +19,7 @@ public class BlockchainTest {
     public void setUp() {
         blockchain = new Blockchain();
         blockchain = blockchain.createNewBlockchain();
-        creator = new Node("127.0.0.1", 8080);
+        creator = new Node("127.0.0.1", 5000);
     }
 
     @Test

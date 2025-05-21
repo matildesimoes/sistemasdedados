@@ -172,6 +172,18 @@ public class MessageHandler {
                 newMsg = new Communication(Communication.MessageType.FIND_BLOCKCHAIN, blockchainString, selfNodeContact, sender);
                 output.writeObject(newMsg);
                 break;
+            case RECENT_BLOCKS_REQUEST:
+                List<Block> latestBlocks = selfNode.getBlockchain().getMostRecentBlocks(Utils.RECENT_BLOCK_PEERS);
+                String blocksJson = Block.serializeBlockList(latestBlocks);
+
+                Communication blocksMsg = new Communication(
+                    Communication.MessageType.RECENT_BLOCKS_REQUEST,
+                    blocksJson,
+                    selfNodeContact,
+                    sender
+                );
+                output.writeObject(blocksMsg);
+                break;
             default:
                 System.out.println("Unknown message Type.");
         }

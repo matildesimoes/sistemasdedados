@@ -20,7 +20,7 @@ public class ChainTest {
     @BeforeEach
     public void setUp() {
         chain = new Chain();
-        creator = new Node("127.0.0.1", 8070);
+        creator = new Node("127.0.0.1", 5002);
     }
 
     @Test

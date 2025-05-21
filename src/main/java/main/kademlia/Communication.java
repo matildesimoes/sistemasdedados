@@ -13,7 +13,7 @@ public class Communication implements Serializable {
 
     public enum MessageType {
         PING, FIND_NODE, ACK, NACK, CHALLENGE, STORE, FIND_VALUE, FIND_BLOCKCHAIN, 
-        CHALLENGE_INIT
+        CHALLENGE_INIT,RECENT_BLOCKS_REQUEST
     }
 
     private final MessageType type;

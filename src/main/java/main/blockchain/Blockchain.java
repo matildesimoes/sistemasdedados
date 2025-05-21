@@ -49,7 +49,47 @@ public class Blockchain implements Serializable{
         return blockchainHeight.values().stream().max(Integer::compareTo).orElse(0);
     }
 
+    public Block getLatestBlock() {
+        Block latest = null;
+        Timestamp latestTime = new Timestamp(0);
 
+        for (Chain chain : this.chains) {
+            Block block = chain.getLatest();
+            Timestamp ts = block.getBlockHeader().getTimestamp();
+            if (ts.after(latestTime)) {
+                latest = block;
+                latestTime = ts;
+            }
+        }
+
+        return latest;
+    }
+
+    public List<Block> getMostRecentBlocks(int count) {
+        List<Block> allBlocks = new ArrayList<>();
+
+        for (Chain chain : this.chains) {
+            allBlocks.addAll(chain.getBlocks());
+        }
+
+        //Order pby timestamp 
+        allBlocks.sort((b1, b2) -> b2.getBlockHeader().getTimestamp().compareTo(b1.getBlockHeader().getTimestamp()));
+
+        return allBlocks.subList(0, Math.min(count, allBlocks.size()));
+    }
+
+
+
+    public boolean hasBlock(String hash) {
+        for (Chain chain : this.chains) {
+            for (Block block : chain.getBlocks()) {
+                if (block.getBlockHeader().getHash().equals(hash)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
     public Block addBlock(List<Transaction> transactions, Chain chain){
         int nounce = 0;

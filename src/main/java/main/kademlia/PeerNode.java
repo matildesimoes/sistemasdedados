@@ -134,7 +134,7 @@ public class PeerNode {
                         for (Chain chain : selfBlockchain.getChains()) {
                             for (Block b : chain.getBlocks()) {
                                 if (b.getBlockHeader().getHash().equals(prevBlockHash)) {
-                                    System.out.println("[✓] Found requested block: " + prevBlockHash);
+                                    System.out.println("Found requested block: " + prevBlockHash);
 
                                     Communication storeMsg = new Communication(
                                         Communication.MessageType.STORE,
@@ -153,7 +153,7 @@ public class PeerNode {
                         }
 
                         if (!found) {
-                            System.out.println("[✗] Could not find requested block: " + prevBlockHash);
+                            System.out.println("Could not find requested block: " + prevBlockHash);
 
                             Communication nack = new Communication(
                                 Communication.MessageType.NACK,
@@ -169,7 +169,7 @@ public class PeerNode {
 
                     try {
                         Block receivedBlock = Block.fromString(info);
-                        System.out.println("[✓] Received block from " + receiver[2] + ": " + receivedBlock.getBlockHeader().getHash());
+                        System.out.println("Received block from " + receiver[2] + ": " + receivedBlock.getBlockHeader().getHash());
 
                         Blockchain.MatchResult stored = this.selfNode.getBlockchain().storeBlock(receivedBlock);
                         
@@ -177,7 +177,7 @@ public class PeerNode {
                             this.selfNode.getBlockchain().recalculateHeights();
 
                     } catch (Exception e) {
-                        System.out.println("[!] Value was not a valid block: " + info);
+                        System.out.println("Value was not a valid block: " + info);
                     }
 
                     break;
@@ -209,7 +209,7 @@ public class PeerNode {
         }
     }
 
-    public void joinNetwork(String bootstrapAddress,boolean skipFindBlockchain, boolean skipFindNode){
+    public void joinNetwork(String bootstrapAddress,boolean skipFindNode, boolean skipFindBlockchain){
 
         String[] parts = bootstrapAddress.split(":");
         String bootstrapIp = parts[0];
@@ -304,33 +304,138 @@ public class PeerNode {
             System.out.println("Skipped FIND_NODE — routing table loaded from disk.");
         }
 
-        if (!skipFindBlockchain) {
-            System.out.println("Requesting blockchain from bootstrap node...");
-            RoutingTable selfRoutingTable = this.selfNode.getRoutingTable();
-            List<String[]> closest = selfRoutingTable.findClosest(this.selfNodeContact[2], 1);
+        System.out.println(" Verifying blockchain consistency with peers...");
 
-            Communication findBlockchain = new Communication(
-                Communication.MessageType.FIND_BLOCKCHAIN,
-                "I want your blockchain :)",
-                this.selfNodeContact,
-                closest.get(0)
+        List<String[]> availablePeers = selfNode.getRoutingTable().getAllKnownNodes(selfNodeContact[2]);
+        if (availablePeers.isEmpty()) {
+            System.out.println("Not enough peers in routing table to verify blockchain consistency.");
+            return;
+        }
+
+        int numPeersToAsk = Math.min(Utils.PEER_MAJORITY_THRESHOLD, availablePeers.size());
+        List<String[]> peersToAsk = selfNode.getRoutingTable().findClosest(selfNodeContact[2], numPeersToAsk);
+
+        Map<String, List<Block>> peerRecentBlocks = new HashMap<>();
+        Map<String, Integer> blockHashVotes = new HashMap<>();
+
+        for (String[] peer : peersToAsk) {
+            Communication req = new Communication(
+                Communication.MessageType.RECENT_BLOCKS_REQUEST,
+                "give me blocks",
+                selfNodeContact,
+                peer
             );
+            Communication res = this.sendMessage(peer, req);
 
-            response = this.sendMessage(bootstrapNodeContact, findBlockchain);
+            if (res != null && res.getType() == Communication.MessageType.RECENT_BLOCKS_REQUEST) {
+                try {
+                    List<Block> blocks = Block.parseBlockList(res.getInformation());
+                    if (blocks.size() > 0) {
+                        String firstHash = blocks.get(0).getBlockHeader().getHash();
+                        blockHashVotes.put(firstHash, blockHashVotes.getOrDefault(firstHash, 0) + 1);
+                        peerRecentBlocks.put(peer[2], blocks);
+                    }
+                } catch (Exception e) {
+                    System.out.println("Could not parse blocks from " + peer[2]);
+                }
+            }
+        }
 
-            if (response == null) {
-                System.out.println("No response from bootstrap node.");
-                return;
+        if (blockHashVotes.isEmpty()) {
+            System.out.println("No recent blocks received. Skipping verification.");
+            return;
+        }
+
+        // Determine majority
+        String majorityFirstHash = null;
+        int maxVotes = 0;
+        for (Map.Entry<String, Integer> entry : blockHashVotes.entrySet()) {
+            if (entry.getValue() > maxVotes) {
+                majorityFirstHash = entry.getKey();
+                maxVotes = entry.getValue();
+            }
+        }
+
+        boolean isConsistent = false;
+
+        if (skipFindBlockchain) {
+            String localLatestHash = selfNode.getBlockchain().getLatestBlock().getBlockHeader().getHash();
+
+            // pega blocos do peer que tem o bloco mais votado
+            for (Map.Entry<String, List<Block>> entry : peerRecentBlocks.entrySet()) {
+                List<Block> blocks = entry.getValue();
+                String firstHash = blocks.get(0).getBlockHeader().getHash();
+                if (!firstHash.equals(majorityFirstHash)) continue;
+
+                // tenta verificar ligação via prevHash até profundidade limitada
+                String prevHash = blocks.get(0).getBlockHeader().getPrevHash();
+                int depth = 0;
+                Block localLatest = selfNode.getBlockchain().getLatestBlock();
+
+                if (localLatest.getBlockHeader().getHash().equals(firstHash)) {
+                    System.out.println("Local chain already contains the majority's latest block. Chain is consistent.");
+                    return;
+                }
+                while (depth < Utils.CHAIN_LINK_DEPTH_LIMIT && prevHash != null) {
+                    if (selfNode.getBlockchain().hasBlock(prevHash)) {
+                        isConsistent = true;
+                        break;
+                    }
+                    for (Block b : blocks) {
+                        if (b.getBlockHeader().getHash().equals(prevHash)) {
+                            prevHash = b.getBlockHeader().getPrevHash();
+                            break;
+                        }
+                    }
+                    depth++;
+                }
+
+                if (isConsistent) {
+                    System.out.println(" Majority blocks link to local chain. Integrating...");
+                    for (Block b : blocks) {
+                        this.tryStoreWithOrphans(b);
+                    }
+                    break;
+                }
             }
 
-            Blockchain selfBlockchain = this.selfNode.getBlockchain();
-            List<Chain> chains = selfBlockchain.blockchainFromString(response.getInformation());
-            selfBlockchain.setChains(chains);
-            selfBlockchain.recalculateHeights();
+            if (!isConsistent) {
+                System.out.println(" Local blockchain is inconsistent. Replacing with majority chain...");
+                requestAndReplaceBlockchain(peersToAsk.get(0));
+            }
+
         } else {
-            System.out.println("Skipped FIND_BLOCKCHAIN — blockchain already loaded.");
+            System.out.println("No local chain, trusting majority.");
+            requestAndReplaceBlockchain(peersToAsk.get(0));
         }
-        
+    }
+
+    public void tryStoreWithOrphans(Block block) {
+        String prevHash = block.getBlockHeader().getPrevHash();
+        if (prevHash == null) {
+            System.out.println("Block has null prevHash, likely genesis or invalid block. Skipping FIND_VALUE.");
+            return;
+        }
+        MatchResult result = selfNode.getBlockchain().storeBlock(block);
+
+        if (result.equals(MatchResult.NOT_FOUND)) {
+            orphanBlocks.add(block);
+
+            if (orphanBlocks.size() >= Utils.ORPHAN_LIMIT) {
+                System.out.println("Discarded Orphan Blocks.");
+                orphanBlocks.clear();
+            }
+
+
+        } else if (result.equals(MatchResult.MATCH_FOUND)) {
+            for (Block orphan : new ArrayList<>(orphanBlocks)) {
+                MatchResult stored = selfNode.getBlockchain().storeBlock(orphan);
+                if (stored.equals(MatchResult.MATCH_FOUND)) {
+                    selfNode.getBlockchain().recalculateHeights();
+                }
+            }
+            orphanBlocks.clear();
+        }
     }
 
 
@@ -462,6 +567,26 @@ public class PeerNode {
         }
 
         return nodes;
+    }
+
+    private void requestAndReplaceBlockchain(String[] peer) {
+        Communication getFull = new Communication(
+            Communication.MessageType.FIND_BLOCKCHAIN,
+            "full chain request",
+            this.selfNodeContact,
+            peer
+        );
+
+        Communication res = this.sendMessage(peer, getFull);
+        if (res != null && res.getType() == Communication.MessageType.FIND_BLOCKCHAIN) {
+            List<Chain> chains = Blockchain.blockchainFromString(res.getInformation());
+            selfNode.getBlockchain().setChains(chains);
+            selfNode.getBlockchain().recalculateHeights();
+            selfNode.getBlockchain().saveBlockchain();
+            System.out.println("Blockchain successfully replaced from " + peer[2]);
+        } else {
+            System.out.println("Failed to fetch blockchain from peer.");
+        }
     }
 
 }

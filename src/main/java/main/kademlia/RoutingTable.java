@@ -119,6 +119,17 @@ public class RoutingTable implements Serializable{
 
         return result;
     }
+    public List<String[]> getAllKnownNodes(String excludeNodeId) {
+        List<String[]> result = new ArrayList<>();
+        for (Bucket b : buckets) {
+            for (String[] n : b.getNodes()) {
+                if (!n[2].equals(excludeNodeId)) {
+                    result.add(n);
+                }
+            }
+        }
+        return result;
+    }
     public void saveRoutingTable() {
         try {
             File dir = new File("data");
