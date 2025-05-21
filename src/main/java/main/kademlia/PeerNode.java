@@ -448,6 +448,9 @@ public class PeerNode {
                         this.selfNodeContact,
                         nodeContact
                     );
+                    String signatureCommunication = blockHash.signCommunication(this.selfNode.getPrivateKey());
+                    blockHash.setSignature(signatureCommunication);
+
                     Communication response = this.sendMessage(nodeContact, blockHash);
 
                     if (response == null) {

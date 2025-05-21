@@ -509,6 +509,7 @@ public class main{
 
             if (sig.equalsIgnoreCase("mine")) {
                 String autoSignature = block.getBlockHeader().signBlockHeader(node.getPrivateKey());
+                System.out.println(autoSignature);
                 block.getBlockHeader().setSignature(autoSignature);
                 System.out.println("BlockHeader auto-signed.");
             } else if (!sig.isEmpty()) {

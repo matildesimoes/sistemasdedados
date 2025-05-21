@@ -63,6 +63,14 @@ public class MessageHandler {
                 output.writeObject(newMsg);
                 break;
             case FIND_VALUE:
+                String pubKeyPem = selfNode.loadPublicKeyByPort(Integer.parseInt(sender[1]));
+                PublicKey pubKey = selfNode.parsePublicKey(pubKeyPem);
+                if (!msg.verifyCommunication(msg.getSignature(), pubKey)) {
+                    newMsg = new Communication(Communication.MessageType.NACK, "Invalid Communication Signature.", selfNodeContact, sender);
+                    output.writeObject(newMsg);
+                    break;
+                }
+
                 String key = msg.getInformation();
                 Blockchain selfBlockchain = selfNode.getBlockchain();
                 boolean found = false;
@@ -84,8 +92,8 @@ public class MessageHandler {
                 }
                 break;
             case STORE:
-                String pubKeyPem = selfNode.loadPublicKeyByPort(Integer.parseInt(sender[1]));
-                PublicKey pubKey = selfNode.parsePublicKey(pubKeyPem);
+                pubKeyPem = selfNode.loadPublicKeyByPort(Integer.parseInt(sender[1]));
+                pubKey = selfNode.parsePublicKey(pubKeyPem);
                 if (!msg.verifyCommunication(msg.getSignature(), pubKey)) {
                     newMsg = new Communication(Communication.MessageType.NACK, "Invalid Communication Signature.", selfNodeContact, sender);
                     output.writeObject(newMsg);
