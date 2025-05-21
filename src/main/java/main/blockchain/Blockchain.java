@@ -275,8 +275,6 @@ public class Blockchain implements Serializable{
                 int countAtHeight = blocksPerHeight.getOrDefault(height, 0);
                 int diff = Math.abs(height - newHeight);
 
-                System.out.println(diff);
-                System.out.println(countAtHeight);
                 // Found a forked height with more than 1 block
                 if (countAtHeight > 1 && diff >= Utils.BLOCK_CHAIN_LIMIT) {
                     System.out.println("Trimming fork at height: " + height + ".");

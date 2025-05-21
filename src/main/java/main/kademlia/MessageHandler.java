@@ -162,6 +162,7 @@ public class MessageHandler {
                                     try {
                                         Thread.sleep(1000); // Check every second
                                     } catch (InterruptedException e) {
+                                    System.out.println("Confirmation thread interrupted for auction " + auctionId);
                                         break;
                                     }
                                 }
