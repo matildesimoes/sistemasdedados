@@ -34,7 +34,7 @@ public class Node implements Serializable{
     private final PublicKey publicKey;
 
     private RoutingTable routingTable;
-    private Timestamp timeAlive;
+    private String timeAlive;
     private Blockchain blockchain;
     private List<Transaction> transactionPool; 
 
@@ -55,12 +55,10 @@ public class Node implements Serializable{
         } catch (Exception e) {
             throw new RuntimeException("Error getting the public key: " + e.getMessage());
         }
+        this.timeAlive = String.valueOf(System.currentTimeMillis());
 
-        String[] nodeContact = {this.ip, String.valueOf(this.port), this.nodeId};
+        this.routingTable = null;
 
-        this.routingTable = new RoutingTable(nodeContact);
-
-        this.timeAlive = null;
         this.transactionPool = new ArrayList<>();
 
         this.blockchain = new Blockchain();
@@ -98,11 +96,11 @@ public class Node implements Serializable{
         return this.privateKey;
     }
 
-    public Timestamp getTimeAlive(){
+    public String getTimeAlive(){
         return this.timeAlive;
     }
     
-    public void setTimeAlive(Timestamp timestamp){
+    public void setTimeAlive(String timestamp){
         this.timeAlive = timestamp;
     }
 

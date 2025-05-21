@@ -57,7 +57,7 @@ public class MessageHandler {
                 List<String[]> closest = selfNode.getRoutingTable().findClosest(sender[2], Utils.BUCKET_SIZE);
                 StringBuilder closestNodes = new StringBuilder();
                 for (String[] s : closest) {
-                    closestNodes.append(s[0]).append(",").append(s[1]).append(",").append(s[2]).append("-");
+                    closestNodes.append(s[0]).append(",").append(s[1]).append(",").append(s[2]).append(",").append(s[3]).append("-");
                 }
                 newMsg = new Communication(Communication.MessageType.FIND_NODE, closestNodes.toString(), selfNodeContact, sender);
                 output.writeObject(newMsg);

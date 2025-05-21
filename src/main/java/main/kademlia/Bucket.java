@@ -3,6 +3,7 @@ package main.kademlia;
 import java.util.List;
 import java.util.ArrayList;
 import java.io.Serializable;
+import java.util.Comparator;
 
 public class Bucket implements Serializable{
     private List<String[]> nodes;
@@ -28,6 +29,7 @@ public class Bucket implements Serializable{
 
     public void update(String[] newNode){
         if(isFull()){
+            nodes.sort(Comparator.comparingLong(n -> Long.parseLong(n[3])));
             nodes.remove(nodes.size()-1);
         }
         nodes.add(newNode);

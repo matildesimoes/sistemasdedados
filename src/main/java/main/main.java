@@ -130,7 +130,7 @@ public class main{
         String bootstrapAddress = args.length == 2 ? args[1] : null;
 
         Node node = new Node(ip, port);
-        String[] nodeContact = {ip, String.valueOf(port), node.getNodeId()};
+        String[] nodeContact = {ip, String.valueOf(port), node.getNodeId(), node.getTimeAlive()};
         RoutingTable routingTable = RoutingTable.loadRoutingTable(nodeContact);
         node.setRoutingTable(routingTable);
 
@@ -245,8 +245,9 @@ public class main{
                                 ip = n.length > 0 ? n[0] : "unknown-ip";
                                 String p = n.length > 1 ? n[1] : "unknown-port";
                                 String id = n.length > 2 ? n[2] : "unknown-id";
+                                String timestamp = n.length > 3 ? n[3] : "unknown-timestamp";
 
-                                System.out.println("  - IP: " + ip + ", Port: " + Integer.valueOf(p)+ ", ID: " + id);
+                                System.out.println("  - IP: " + ip + ", Port: " + Integer.valueOf(p)+ ", ID: " + id + ", Timestamp: " + timestamp);
                             }
                         }
                     }

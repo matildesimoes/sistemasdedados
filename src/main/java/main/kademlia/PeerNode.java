@@ -4,7 +4,6 @@ import main.Utils;
 import main.blockchain.*;
 import main.blockchain.Blockchain.MatchResult;
 
-
 import java.io.*;
 import java.net.*;
 import java.security.PublicKey;
@@ -97,11 +96,6 @@ public class PeerNode {
 
             switch (response.getType()) {
                 case ACK:
-                    if (response.getInformation().equals("CHALLENGE completed.")) {
-                        selfNode.setTimeAlive(Timestamp.from(Instant.now()));
-                    } else if (response.getInformation().equals("PING Received.")) {
-                        System.out.println("Node: " + receiver[2] + " is alive!");
-                    }
                     break;
                 case NACK:
                     if (response.getInformation().equals("Wrong challenge response.")) {
@@ -217,7 +211,7 @@ public class PeerNode {
 
         Node bootstrapNode = new Node(bootstrapIp,bootstrapPort);
 
-        String[] bootstrapNodeContact = {bootstrapIp, String.valueOf(bootstrapPort), bootstrapNode.getNodeId()};
+        String[] bootstrapNodeContact = {bootstrapIp, String.valueOf(bootstrapPort), bootstrapNode.getNodeId(), ""};
 
         File challengeFile = new File("data/challenge.txt");
         String nounceStr;
@@ -282,7 +276,7 @@ public class PeerNode {
 
                 Communication find = new Communication(
                     Communication.MessageType.FIND_NODE,
-                    this.selfNode.getNodeIp() + "," + String.valueOf(this.selfNode.getNodePort()) + "," + this.selfNode.getNodeId(),
+                    this.selfNode.getNodeIp() + "," + String.valueOf(this.selfNode.getNodePort()) + "," + this.selfNode.getNodeId() + "," + this.selfNode.getTimeAlive(),
                     this.selfNodeContact,
                     current
                 );
@@ -522,33 +516,6 @@ public class PeerNode {
             }
         }
 
-
-    }
-
-    public void checkIfNodeAlive(){
-        List<Bucket> buckets = this.selfNode.getRoutingTable().getBuckets();
-        for(Bucket bucket : buckets){
-            List<String[]> nodes = bucket.getNodes();
-            for(String[] nodeContact : nodes){
-                if(!nodeContact[2].equals(this.selfNodeContact[2])){
-                    Communication ping = new Communication(
-                        Communication.MessageType.PING,
-                        "are you alive?",
-                        this.selfNodeContact,
-                        nodeContact
-                    );
-
-                    Communication response = this.sendMessage(nodeContact, ping);
-
-                    if (response == null) {
-                        System.out.println("No PING response from node.");
-                        this.selfNode.getRoutingTable().removeNode(nodeContact[2]);
-                        return;
-                    }
-                }
-                
-            }
-        }
 
     }
 
