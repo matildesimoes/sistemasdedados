@@ -201,46 +201,53 @@ public class MessageHandler {
     public static String getAuctionWinner(Node selfNode, int auctionId){
         String winnerId = null;
         int highestBid = -1;
-        Timestamp closeTimestamp = null;
+        int closeHeight = -1;
 
-        List<Chain> chains = selfNode.getBlockchain().getChains();
+        List<Block> chainBlocks = selfNode.getBlockchain().getMainChainBlocks();
 
-        for (Chain chain : chains) {
-            for (Block block : chain.getBlocks()) {
-                for (Transaction trans : block.getTransaction()) {
-                    if (trans.getType() == Transaction.Type.CLOSE_AUCTION && trans.getAuctionNumber() == auctionId) {
-                        closeTimestamp = trans.getTimestamp();
-                        break;
-                    }
+        for (int i = 0; i < chainBlocks.size(); i++) {
+            Block block = chainBlocks.get(i);
+            for (Transaction trans : block.getTransaction()) {
+                if (trans.getType() == Transaction.Type.CLOSE_AUCTION && trans.getAuctionNumber() == auctionId) {
+                    closeHeight = i;
+                    break;
                 }
-                if (closeTimestamp != null) break;
             }
-            if (closeTimestamp != null) break;
+            if (closeHeight != -1) break;
         }
 
-        if (closeTimestamp == null) {
-            System.out.println("Could not determine closing timestamp for auction id: " + auctionId);
+        if (closeHeight == -1) {
+            System.out.println("Could not find CLOSE_AUCTION for auction ID: " + auctionId);
             return null;
         }
 
-        for (Chain chain : chains) {
-            for (Block block : chain.getBlocks()) {
-                if (block.getBlockHeader().getTimestamp().after(closeTimestamp)) continue;
+        int latestHeight = selfNode.getBlockchain().getLatestHeight();
+        int targetHeight = closeHeight + Utils.BLOCK_CHAIN_LIMIT;
 
-                for (Transaction trans : block.getTransaction()) {
-                    if (trans.getType() == Transaction.Type.BID && trans.getAuctionNumber() == auctionId) {
-                        try {
-                            String info = trans.getInformation(); // Ex: "Bid ammount: 300"
-                            int bidValue = Integer.parseInt(info.replaceAll("[^0-9]", ""));
-                            if (bidValue > highestBid) {
-                                highestBid = bidValue;
-                                winnerId = trans.getCreator().getNodeId();
-                            }
-                        } catch (Exception e) {
+
+        if (latestHeight < targetHeight) {
+            return null;
+        }
+
+        for (int i = 0; i <= targetHeight && i < chainBlocks.size(); i++) {
+            Block block = chainBlocks.get(i);
+
+            for (Transaction trans : block.getTransaction()) {
+
+                if (trans.getType() == Transaction.Type.BID && trans.getAuctionNumber() == auctionId) {
+                    try {
+                        String info = trans.getInformation(); // e.g., "Bid amount: 300"
+                        int bidValue = Integer.parseInt(info.replaceAll("[^0-9]", ""));
+                        String bidder = trans.getCreatorId();
+
+                        if (bidValue > highestBid) {
+                            highestBid = bidValue;
+                            winnerId = bidder;
                         }
+                    } catch (Exception e) {
                     }
                 }
-            }
+                }
         }
 
         return winnerId;

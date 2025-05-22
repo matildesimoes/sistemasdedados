@@ -1,0 +1,97 @@
+{
+  "blocks": [
+    {
+      "blockHeader": {
+        "merkleRoot": "null",
+        "timestamp": "May 22, 2025, 10:52:24 AM",
+        "nounce": 0,
+        "hash": "e809669a50f52e3b76c200f89a6c5607d5807671d4d945dba1b689d2a00afa4f"
+      },
+      "transactions": []
+    },
+    {
+      "blockHeader": {
+        "prevHash": "e809669a50f52e3b76c200f89a6c5607d5807671d4d945dba1b689d2a00afa4f",
+        "merkleRoot": "b542cc65eee2285ccd8dc6d0439344ee94b6f354c4efb4d2ffcb1bb4669f1193",
+        "timestamp": "May 22, 2025, 10:54:26 AM",
+        "nounce": 912243,
+        "hash": "00f1e064307ca327a6975d2b17525267f780de8bf6ceeaf64807f717cf06684c",
+        "signature": "RAyQAaH8tfgczvx+7kRy8lF8UstX1vrmUMC6wlXrePFCYZqG8iX2IxcS/5I7Oegokv6P94NY9mm2st2KXLNICkfiKhdmnrIjcHMJGGnUwjWh1MyGwJfChejcCL/xQ6UtxFWW1315XkhUyMuoy3jcdeDL6w7lrCRSLA2Go8iUHJAKJE/wBQmE9aEAwjB5wRYYBHKW1eV2uQR5xrb2MyLeJUf68MaoDwHDT7apzxze/SCNMZoULfEO4/B8g4+3lrQBsGmAl8O7MI5fhyNTVUU0O5VfQ8SL4httdrfh1f+zKslF3gRJst24f6xxMugI0Its7oQBy/he0hGVwmQ7LYHAvw\u003d\u003d"
+      },
+      "transactions": [
+        {
+          "creatorId": "cVLjWPuVo1f0jKxalXt0dM8eiKM\u003d",
+          "information": "wasdasd",
+          "signature": "JDBOTQ9eK6KUmUgyi0yx89xAF72rIBhi4VTnOgbKTso6m+FC5rGeo3tsnTLGw/3A6mcl/0u3ZbzJetdV4j/F/l6pyGixhP6Kz+dqsFspBLZsN0QutdR4sJUYh00hPrxQHCNsHgd/dcgDZCZuZ1tq3KIZZ91nVkUMy923Wq1Ht0KkY8YuP6fszufM7cr34nDRGOjd416xK1roF2FXkZ6+92fIjrplZ0zb8r83MfdNnIcIoFXip1WnglRJn/MgMWZmrOnouMxdIS0ddg5BdiGz6syOVB6clTxjM2HQ2kj56A5pNucId3Xg3xr3/K2drKdt6NeIVRuc6vfA1Zn9ClPRUQ\u003d\u003d",
+          "timestamp": "May 22, 2025, 10:54:25 AM",
+          "auctionNumber": 631191,
+          "type": "CREATE_AUCTION"
+        },
+        {
+          "creatorId": "cVLjWPuVo1f0jKxalXt0dM8eiKM\u003d",
+          "information": "awsdas",
+          "signature": "KIlpyqAzl9jvQpMENBP/y4t9woiIHm6XOEWMsDqg4w83+lCQooys9iopwd+RMozpy0Jn6ImL5SWabd4UKWzgB2AMq/NGDIwkYQ6Bjsw2PZOeJ4XsVcRi+mIFqJfIHQJQ8WAmKruBbynuzJJ8sSJxJDhTinCcSPoXJf8Iq4kSbQQtuR1wur76HSfo1xr2i7nazJ5nJ34ew6qH6KuiNJsUXerReHMNEbSKsKC4UZyGECE887PEb9eOz/5IFowUYAickr8c+lcnaXZiUMo1gxmoeGipXNMQzSbotp7x6Ol62ScYHwcF6FBc19FGkA0i+dpMa8++h4Hw+yP6fDTj2NgFIQ\u003d\u003d",
+          "timestamp": "May 22, 2025, 10:54:26 AM",
+          "auctionNumber": 946929,
+          "type": "CREATE_AUCTION"
+        }
+      ]
+    },
+    {
+      "blockHeader": {
+        "prevHash": "00f1e064307ca327a6975d2b17525267f780de8bf6ceeaf64807f717cf06684c",
+        "merkleRoot": "1c6f6b4e6ab6a37bde43756be8e48533723c08c9a34f4db82f225dcc7880e4c4",
+        "timestamp": "May 22, 2025, 10:54:37 AM",
+        "nounce": 958485,
+        "hash": "00fae195746023cc01209caceda52650b8971fd099b97264ff00f8673ad2b6ed",
+        "signature": "dA3H9vd1j/L43Yh6Bza2wuV6cmDGqvsDhDvGY+FoTjK7KFi2sa5hJNIljx2nJyyWKPxJr5N68WAwAq2q5VtrPVQPTYnRpDcoX5v9/pwe6ePEPS7lh+h8Z+QKFHxhCulHHPhplE7Uyv1uBiXFnhFID2M1esqihvQa+E4GHR7Enhug9WjEKcraZ5oKmC6g/eZRroglK1RBIVHt0fsNU28okIzp7kpKx/iarTD4e+qWTsiJebs4Sv9G6u3RQ22I8CMQfxbdJmOrckjKvW1oXZCPXPx81RXCYiGA3DzyFlqiHTIxD4Z2Ew4Iv0FlJ0edyHaiUdES28O4S/FFDIef06WxPw\u003d\u003d"
+      },
+      "transactions": [
+        {
+          "creatorId": "cVLjWPuVo1f0jKxalXt0dM8eiKM\u003d",
+          "information": "wasdasd",
+          "signature": "IokHTevefoR21yOQ0TL1rCPO63t1bbjRy1CZBQ9hMh74PzKbItoFzVftNZxF14cQxaXs9LTbT/rCTYC3yBtAiDobFn2ibG0fk1R/TjsbjKjf5ZOj7Y/vxqxf9mYbSZYe9K5RmeIySyjzV1Xqn+0Bs0RtYpQqIf0Gr1F2qWOjGyLJMphJ4nGwCjmoCIPi1j8893k1n7+dg596S/EKx/Xg6eqgmu7W80mBV2gF/9VPc29V+4t1CCpU2++A5LrIjaQl4YgFSXUuafNugPUV1f7fVN8kO28N+Fc7knIcOHzhQb6nau9qvIvBvPPa2TLgjJuzfvR9aAPKx/mum2rF9HNc2A\u003d\u003d",
+          "timestamp": "May 22, 2025, 10:54:35 AM",
+          "auctionNumber": 631191,
+          "type": "START_AUCTION"
+        },
+        {
+          "creatorId": "cVLjWPuVo1f0jKxalXt0dM8eiKM\u003d",
+          "information": "wadsdasd",
+          "signature": "DIAE4btyoeSY8aR+P+PyEu7K3NTfclmQZVvMI0QYpbkApTDAa9ohW2rEpjAsoTesTdPklOlGr37n6QFxgGHTu4WN6Fh/H8pSgV4uemCEPC2lrfmb/qChl+qwN4is2BymWEKWlpzce2vqaRMpok6E88n+tRH6R+Fj76dTqPAt3pKD86jaoWgIKQ0cGYyg7iiz43zBI75acUlwT2GYRD4zD7r3lemkM5Y1GnrHUIIITreIYZuxRotcGY5qVLvnBrW0c9ML3cCbO8yXW7vX/Wqj+bNcBXmK3W3RotTNo9AJlF5PSIYf0IYuj/kcAaHUXj+In75MLluZb3SFdkirirbW3g\u003d\u003d",
+          "timestamp": "May 22, 2025, 10:54:37 AM",
+          "auctionNumber": 633699,
+          "type": "CREATE_AUCTION"
+        }
+      ]
+    },
+    {
+      "blockHeader": {
+        "prevHash": "00fae195746023cc01209caceda52650b8971fd099b97264ff00f8673ad2b6ed",
+        "merkleRoot": "256a465baf8a50ed5095c215b62d715f9d8613de4d162dd7635cf339c2125514",
+        "timestamp": "May 22, 2025, 10:54:48 AM",
+        "nounce": 798231,
+        "hash": "00afdb54b8c4347ff901340766e9173f7e413334848e84564e4173bcbde4ebc6",
+        "signature": "wadynL8IBd8lLyDImf+NNz0BjUEZ4UfiQ+rQm6o6cRqbEV3/MebFErgYsL+DDmYJA72z1mSp6P7GzIke9F+8CNUZ/taoIQIhRNybiWZ2FXkluX66TmNPWvocCyxNRFx6QjWgLYVn5tJCEf/7/t/rXMSk6+hMSyesNBuLYLh4vuE1vf01ilfKFWu7V/288KSO2xDDa+YKnOVDTX47ffkm8fsVBo2iLcnS+D5kKwJEaVYRwSMQFm4cBoiuOeIfX1ScS4xRa/BFIBSjXV/qTqBoOAeAinoNhoFSZfk+G3D64lih25u5RraFvQxba3Finawk+qkge/0FX/634QR25cvbOQ\u003d\u003d"
+      },
+      "transactions": [
+        {
+          "creatorId": "yOk0di2Iff92i8VqK931g6+E5R8\u003d",
+          "information": "Bid ammount: 1",
+          "signature": "cezSXM+diLl3P9MvDRLt+TrT2hLHAlKI/DwSn0BuU6YUij51ArVGZmNurLVP8Kls4omQYDuomGU9U290I8iBXsHOl1srZHzKgzaxAcHgI1JoF0mnSab2rPJIsvH/Q6FBaq3bS4qgkICt5Uy1ESvUrLXDfFPkqQYL9blZ3bS0HbFockieINSEpO7o+p/K6SAlRu2ZSPFV+7IMEwCKbBMwuzbqbV+bi05QzFgqWGOYZm80d+N3o3g7YIYdiEmAO+9oEwk7+3chESQNm8TrWPLpjsy7T+5IbIhsMcuN/6EZSLucFCDfi9Vid843Di9lrotCxn3/3zb4wGznL2g6fCynow\u003d\u003d",
+          "timestamp": "May 22, 2025, 10:54:43 AM",
+          "auctionNumber": 631191,
+          "type": "BID"
+        },
+        {
+          "creatorId": "yOk0di2Iff92i8VqK931g6+E5R8\u003d",
+          "information": "wadsda",
+          "signature": "b8vn8IeaRzJdrxWPX0TnX+nqdUm9X8/P7dPU4T5F8ZuTfIP0H2fFvk0EDasMmqdyN+Egljr3TgKlQrr5/H8A/6NHzJpNVVkSwrTZ5x+3xZQ8uu+MQJuC+SwnksWr1gaM3pQyirUhTWvJBDPIOmcpV+9EIhYRKb3WHFH/TFBpAYNS7XN8k8VHVbGLAMcPEKsdebE5BzOAJBb8g5t/FtSbrcl3vwsKNglgMHX/FCYU4OEVolY2um5OcEJ5DE7BI7JKyEM316zlFzmANIpr1FarTdtWdLcc3mRwV8mi9I73wiInQifFAOGLAlkB1oodUlBmCXjKGEySTspo9+b8zTGgLg\u003d\u003d",
+          "timestamp": "May 22, 2025, 10:54:48 AM",
+          "auctionNumber": 107663,
+          "type": "CREATE_AUCTION"
+        }
+      ]
+    }
+  ]
+}

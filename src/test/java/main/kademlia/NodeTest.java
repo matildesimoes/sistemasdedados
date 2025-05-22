@@ -36,7 +36,7 @@ public class NodeTest {
     @Test
     public void testTimeAliveSetterGetter() {
         Timestamp now = new Timestamp(System.currentTimeMillis());
-        node.setTimeAlive(now);
+        node.setTimeAlive(String.valueOf(now));
         assertEquals(now, node.getTimeAlive());
     }
 

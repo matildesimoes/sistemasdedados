@@ -376,6 +376,23 @@ public class Blockchain implements Serializable{
         return this.chains;
     }
 
+    public List<Block> getMainChainBlocks() {
+        List<Chain> chains = this.getChains(); // or however you store forks
+        Chain longestChain = null;
+
+        for (Chain chain : chains) {
+            if (longestChain == null || chain.getBlocks().size() > longestChain.getBlocks().size()) {
+                longestChain = chain;
+            }
+        }
+
+        if (longestChain != null) {
+            return longestChain.getBlocks();
+        } else {
+            return new ArrayList<>(); // return empty list if no chains found
+        }
+    }
+
     public void setChains(List<Chain> chains){
         this.chains =chains;
     }

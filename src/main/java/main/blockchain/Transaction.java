@@ -17,8 +17,7 @@ import java.security.MessageDigest;
 
 public class Transaction implements Serializable{
     //Ignore to avoid problems with serialization of PrivateKey 
-    @JsonIgnore
-    private transient Node creator; 
+    private String creatorId; 
 
     private String information;
     private String signature;
@@ -36,10 +35,10 @@ public class Transaction implements Serializable{
 
     public Transaction(Type type, Node creator, int auctionNumber, String information){
         this.type = type;
-        this.creator = creator;
+        this.creatorId = creator.getNodeId();
         this.auctionNumber = auctionNumber;
         this.information = information;
-        this.signature = signTransaction(this.creator.getPrivateKey());
+        this.signature = signTransaction(creator.getPrivateKey());
         this.timestamp = Timestamp.from(Instant.now());
     }
 
@@ -49,7 +48,7 @@ public class Transaction implements Serializable{
             ObjectOutputStream oos = new ObjectOutputStream(bos);
             
             oos.writeObject(type);
-            oos.writeObject(creator);
+            oos.writeObject(creatorId);
             oos.writeObject(auctionNumber);
             oos.writeObject(information);
             oos.writeObject(timestamp);
@@ -77,7 +76,7 @@ public class Transaction implements Serializable{
             ObjectOutputStream oos = new ObjectOutputStream(bos);
 
             oos.writeObject(type);
-            oos.writeObject(creator);
+            oos.writeObject(creatorId);
             oos.writeObject(auctionNumber);
             oos.writeObject(information);
             oos.writeObject(timestamp);
@@ -101,9 +100,8 @@ public class Transaction implements Serializable{
     }
 
     
-    @JsonIgnore
-    public Node getCreator() {
-        return creator;
+    public String getCreatorId() {
+        return creatorId;
     }
 
     public String getInformation() {
