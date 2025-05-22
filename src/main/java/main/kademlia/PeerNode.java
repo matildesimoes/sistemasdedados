@@ -310,7 +310,7 @@ public class PeerNode {
         List<String[]> peersToAsk = selfNode.getRoutingTable().findClosest(selfNodeContact[2], numPeersToAsk);
 
         Map<String, List<Block>> peerRecentBlocks = new HashMap<>();
-        Map<String, Integer> blockHashVotes = new HashMap<>();
+        Map<String, Integer> blockFrequency = new HashMap<>();
 
         for (String[] peer : peersToAsk) {
             Communication req = new Communication(
@@ -321,13 +321,15 @@ public class PeerNode {
             );
             Communication res = this.sendMessage(peer, req);
 
-            if (res != null && res.getType() == Communication.MessageType.RECENT_BLOCKS_REQUEST) {
+        if (res != null && res.getType() == Communication.MessageType.RECENT_BLOCKS_REQUEST) {
                 try {
                     List<Block> blocks = Block.parseBlockList(res.getInformation());
-                    if (blocks.size() > 0) {
-                        String firstHash = blocks.get(0).getBlockHeader().getHash();
-                        blockHashVotes.put(firstHash, blockHashVotes.getOrDefault(firstHash, 0) + 1);
+                    if (!blocks.isEmpty()) {
                         peerRecentBlocks.put(peer[2], blocks);
+                        for (Block b : blocks) {
+                            String hash = b.getBlockHeader().getHash();
+                            blockFrequency.put(hash, blockFrequency.getOrDefault(hash, 0) + 1);
+                        }
                     }
                 } catch (Exception e) {
                     System.out.println("Could not parse blocks from " + peer[2]);
@@ -335,66 +337,87 @@ public class PeerNode {
             }
         }
 
-        if (blockHashVotes.isEmpty()) {
+        if (peerRecentBlocks.isEmpty()) {
             System.out.println("No recent blocks received. Skipping verification.");
             return;
         }
 
-        // Determine majority
-        String majorityFirstHash = null;
-        int maxVotes = 0;
-        for (Map.Entry<String, Integer> entry : blockHashVotes.entrySet()) {
-            if (entry.getValue() > maxVotes) {
-                majorityFirstHash = entry.getKey();
-                maxVotes = entry.getValue();
+        Set<String> compatiblePeers = new HashSet<>();
+
+        for (Map.Entry<String, List<Block>> entry : peerRecentBlocks.entrySet()) {
+            String peerId = entry.getKey();
+            List<Block> blocks = entry.getValue();
+
+            boolean hasSharedBlock = blocks.stream()
+                .map(b -> b.getBlockHeader().getHash())
+                .anyMatch(h -> blockFrequency.getOrDefault(h, 0) > 1);
+
+            if (hasSharedBlock) {
+                compatiblePeers.add(peerId);
             }
         }
 
-        boolean isConsistent = false;
+        int totalPeers = peerRecentBlocks.size();
+        int majorityThreshold = totalPeers / 2 + 1;
+        System.out.println("[DEBUG] Peers with at least one shared block: " + compatiblePeers.size() + "/" + totalPeers);
+
+        boolean isConsistent = compatiblePeers.size() >= majorityThreshold;
+
 
         if (skipFindBlockchain) {
-            String localLatestHash = selfNode.getBlockchain().getLatestBlock().getBlockHeader().getHash();
+            if (isConsistent) {
+                System.out.println("Chain is consistent with majority. Attempting to integrate matching blocks...");
 
-            // pega blocos do peer que tem o bloco mais votado
-            for (Map.Entry<String, List<Block>> entry : peerRecentBlocks.entrySet()) {
-                List<Block> blocks = entry.getValue();
-                String firstHash = blocks.get(0).getBlockHeader().getHash();
-                if (!firstHash.equals(majorityFirstHash)) continue;
+                for (Map.Entry<String, List<Block>> entry : peerRecentBlocks.entrySet()) {
+                    String peerId = entry.getKey();
+                    if (!compatiblePeers.contains(peerId)) continue;
 
-                // tenta verificar ligação via prevHash até profundidade limitada
-                String prevHash = blocks.get(0).getBlockHeader().getPrevHash();
-                int depth = 0;
-                Block localLatest = selfNode.getBlockchain().getLatestBlock();
+                    List<Block> blocks = entry.getValue();
+                    Block firstBlock = blocks.get(0);
 
-                if (localLatest.getBlockHeader().getHash().equals(firstHash)) {
-                    System.out.println("Local chain already contains the majority's latest block. Chain is consistent.");
-                    return;
-                }
-                while (depth < Utils.CHAIN_LINK_DEPTH_LIMIT && prevHash != null) {
-                    if (selfNode.getBlockchain().hasBlock(prevHash)) {
-                        isConsistent = true;
-                        break;
+                    if (selfNode.getBlockchain().hasBlock(firstBlock.getBlockHeader().getHash())) {
+                        System.out.println(" Local chain already contains blocks from peer " + peerId + ". No action needed.");
+                        return;
                     }
-                    for (Block b : blocks) {
-                        if (b.getBlockHeader().getHash().equals(prevHash)) {
-                            prevHash = b.getBlockHeader().getPrevHash();
+
+                    boolean linked = false;
+                    String prevHash = firstBlock.getBlockHeader().getPrevHash();
+                    int depth = 0;
+
+                    while (depth < Utils.CHAIN_LINK_DEPTH_LIMIT && prevHash != null) {
+                        if (selfNode.getBlockchain().hasBlock(prevHash)) {
+                            linked = true;
                             break;
                         }
+
+                        final String currentPrevHash = prevHash;
+                        Optional<Block> prevBlock = blocks.stream()
+                            .filter(b -> b.getBlockHeader().getHash().equals(currentPrevHash))
+                            .findFirst();
+
+                        if (prevBlock.isPresent()) {
+                            prevHash = prevBlock.get().getBlockHeader().getPrevHash();
+                        } else {
+                            break;
+                        }
+
+                        depth++;
                     }
-                    depth++;
+
+                    if (linked) {
+                        System.out.println(" Blocks from peer " + peerId + " link to local chain. Integrating...");
+                        for (Block b : blocks) {
+                            this.tryStoreWithOrphans(b);
+                        }
+                        return;
+                    }
                 }
 
-                if (isConsistent) {
-                    System.out.println(" Majority blocks link to local chain. Integrating...");
-                    for (Block b : blocks) {
-                        this.tryStoreWithOrphans(b);
-                    }
-                    break;
-                }
-            }
+                System.out.println(" No compatible blocks linked to local chain. Replacing with majority chain...");
+                requestAndReplaceBlockchain(peersToAsk.get(0));
 
-            if (!isConsistent) {
-                System.out.println(" Local blockchain is inconsistent. Replacing with majority chain...");
+            } else {
+                System.out.println(" Chain is inconsistent with majority. Replacing with majority chain...");
                 requestAndReplaceBlockchain(peersToAsk.get(0));
             }
 
