@@ -10,6 +10,12 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.util.Base64;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.time.temporal.ChronoUnit;
+
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 
 
@@ -17,6 +23,7 @@ import java.util.Base64;
 public class BlockHeader implements Serializable {
     private String prevHash;
     private String merkleRoot;
+
     private Timestamp timestamp;
     private int nounce;
     private String hash;
@@ -27,7 +34,7 @@ public class BlockHeader implements Serializable {
 
     public BlockHeader(String prevHash, int nounce, String merkleRoot) {
         this.prevHash = prevHash;
-        this.timestamp = Timestamp.from(Instant.now().truncatedTo(java.time.temporal.ChronoUnit.MILLIS));
+        this.timestamp = Timestamp.from(Instant.now().truncatedTo(ChronoUnit.SECONDS));
         this.nounce = nounce;
         this.signature = null;
         this.merkleRoot = merkleRoot;
@@ -84,19 +91,17 @@ public class BlockHeader implements Serializable {
 
     public String signBlockHeader(PrivateKey privateKey) {
         try {
-            // Serialize the block or block header (depending on what you want to sign)
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(bos);
+            DataOutputStream dos = new DataOutputStream(bos);
 
-            oos.writeObject(prevHash); 
-            oos.writeObject(timestamp); 
-            oos.writeObject(nounce); 
-            oos.writeObject(merkleRoot); 
+            dos.writeUTF(prevHash != null ? prevHash : "");
+            dos.writeLong(timestamp.getTime());
+            dos.writeInt(nounce);
+            dos.writeUTF(merkleRoot != null ? merkleRoot : "");
 
-            oos.flush();
+            dos.flush();
             byte[] data = bos.toByteArray();
 
-            // Create signature
             Signature signature = Signature.getInstance("SHA256withRSA");
             signature.initSign(privateKey);
             signature.update(data);
@@ -109,32 +114,29 @@ public class BlockHeader implements Serializable {
         }
     }
 
+
     public boolean verifyBlockHeader(String signatureBase64, PublicKey publicKey) {
         try {
-            if (signatureBase64 == null) {
-                return false;
-            }
-            // Serialize the block header
+            if (signatureBase64 == null) return false;
+
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(bos);
+            DataOutputStream dos = new DataOutputStream(bos);
 
-            oos.writeObject(prevHash); 
-            oos.writeObject(timestamp); 
-            oos.writeObject(nounce); 
-            oos.writeObject(merkleRoot); 
+            dos.writeUTF(prevHash != null ? prevHash : "");
+            dos.writeLong(timestamp.getTime());
+            dos.writeInt(nounce);
+            dos.writeUTF(merkleRoot != null ? merkleRoot : "");
 
-            oos.flush();
+            dos.flush();
             byte[] data = bos.toByteArray();
 
-            // Verify the signature
-            Signature signature = Signature.getInstance("SHA256withRSA");
-            signature.initVerify(publicKey);
-            signature.update(data);
+            Signature sig = Signature.getInstance("SHA256withRSA");
+            sig.initVerify(publicKey);
+            sig.update(data);
 
             byte[] signatureBytes = Base64.getDecoder().decode(signatureBase64);
 
-            return signature.verify(signatureBytes);
-
+            return sig.verify(signatureBytes);
 
         } catch (Exception e) {
             e.printStackTrace();

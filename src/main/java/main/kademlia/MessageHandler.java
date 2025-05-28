@@ -99,8 +99,13 @@ public class MessageHandler {
                     output.writeObject(newMsg);
                     break;
                 }
+
                 Block block = Block.fromString(msg.getInformation());
                 BlockHeader blockHeader = block.getBlockHeader();
+                String blockCreator = block.getTransaction().get(0).getCreatorId();
+                
+                pubKeyPem = selfNode.loadPublicKeyByNodeId(blockCreator);
+                pubKey = selfNode.parsePublicKey(pubKeyPem);
                 if (!blockHeader.verifyBlockHeader(blockHeader.getSignature(), pubKey)) {
                     newMsg = new Communication(Communication.MessageType.NACK, "Invalid Block Header Signature.", selfNodeContact, sender);
                     output.writeObject(newMsg);
@@ -115,6 +120,7 @@ public class MessageHandler {
                 System.out.println("Received Store (from " + sender[2] + "): " + blockHeader.getHash());
                 Blockchain.MatchResult result = selfNode.getBlockchain().storeBlock(block);
                 if (result.equals(MatchResult.NOT_FOUND)) {
+                    System.out.println("not found");
                     orphanBlocks.add(block);
                     if (orphanBlocks.size() == Utils.ORPHAN_LIMIT) {
                         System.out.println("Discarded Orphan Blocks.");

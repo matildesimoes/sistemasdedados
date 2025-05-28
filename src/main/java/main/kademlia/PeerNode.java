@@ -22,7 +22,7 @@ public class PeerNode {
 
     public PeerNode(Node selfNode) {
         this.selfNode = selfNode;
-        this.selfNodeContact = new String[]{selfNode.getNodeIp(), String.valueOf(selfNode.getNodePort()), selfNode.getNodeId()};
+        this.selfNodeContact = new String[]{selfNode.getNodeIp(), String.valueOf(selfNode.getNodePort()), selfNode.getNodeId(), selfNode.getTimeAlive()};
         this.messageHandler = new MessageHandler(this, orphanBlocks);
     }
 
@@ -265,18 +265,17 @@ public class PeerNode {
             Queue<String[]> toVisit = new LinkedList<>();
 
             toVisit.add(bootstrapNodeContact);
-            
+            visited.add(bootstrapNodeContact[2]);
+
             int steps = 0;
             while (!toVisit.isEmpty() && steps < Utils.RECURSIVE_FIND_NODE) {
                 String[] current = toVisit.poll();
                 String nodeId = current[2];
 
-                if (visited.contains(nodeId)) continue;
-                visited.add(nodeId);
 
                 Communication find = new Communication(
                     Communication.MessageType.FIND_NODE,
-                    this.selfNode.getNodeIp() + "," + String.valueOf(this.selfNode.getNodePort()) + "," + this.selfNode.getNodeId() + "," + this.selfNode.getTimeAlive(),
+                    this.selfNode.getNodeIp() + "," + this.selfNode.getNodePort() + "," + this.selfNode.getNodeId() + "," + this.selfNode.getTimeAlive(),
                     this.selfNodeContact,
                     current
                 );
@@ -284,16 +283,21 @@ public class PeerNode {
                 response = this.sendMessage(current, find);
 
                 if (response != null) {
-                    List<String[]> closest = parseClosestNodes(response.getInformation()); // IP, PORT, ID
+                    List<String[]> closest = parseClosestNodes(response.getInformation());
                     for (String[] contact : closest) {
                         String contactId = contact[2];
-                        if (!visited.contains(contactId) && !selfNode.getRoutingTable().nodeExist(contact)) {
+                        boolean notVisited = !visited.contains(contactId);
+
+                        if (notVisited) {
                             toVisit.add(contact);
+                            visited.add(contactId);
                         }
                     }
                 }
+
                 steps++;
             }
+            System.out.println("FIND_NODE complete. Total nodes visited: " + visited.size());
         } else {
             System.out.println("Skipped FIND_NODE — routing table loaded from disk.");
         }
@@ -486,7 +490,7 @@ public class PeerNode {
 
                         Communication findNode = new Communication(
                             Communication.MessageType.FIND_NODE,
-                            this.selfNodeContact[2],
+                            this.selfNodeContact[0] + "," + this.selfNodeContact[1] + ","+ this.selfNodeContact[2] + ","+this.selfNodeContact[3], 
                             this.selfNodeContact,
                             nodeContact
                         );
@@ -554,7 +558,7 @@ public class PeerNode {
 
         for (String entry : entries) {
             String[] parts = entry.split(",");
-            if (parts.length == 3) {
+            if (parts.length == 4) {
                 nodes.add(parts); 
             }
         }

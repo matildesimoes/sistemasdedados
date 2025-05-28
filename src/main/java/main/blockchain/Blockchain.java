@@ -38,7 +38,8 @@ public class Blockchain implements Serializable{
     public enum MatchResult {
         MATCH_FOUND,
         TOO_OLD,
-        NOT_FOUND
+        NOT_FOUND,
+        DUPLICATED
     }
 
     public int getBlockHeight(String hash) {
@@ -168,6 +169,12 @@ public class Blockchain implements Serializable{
     }
 
     public MatchResult storeBlock(Block block){
+        String hash = block.getBlockHeader().getHash();
+
+        if (this.hasBlock(hash)) {
+            return MatchResult.DUPLICATED;
+        } 
+
         if(this.chains.size()==1){
             BlockHeader latestBlockHeader = this.chains.get(0).getLatest().getBlockHeader();
             if(block.getBlockHeader().getPrevHash().equals(latestBlockHeader.getHash())){

@@ -141,6 +141,24 @@ public class Node implements Serializable{
         throw new IllegalArgumentException("Port not found on JSON: " + port);
     }
 
+    public static String loadPublicKeyByNodeId(String targetNodeId) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode root = mapper.readTree(new File("data/infonode.json"));
+        JsonNode nodes = root.get("nodes");
+
+        for (JsonNode node : nodes) {
+            String publicKeyPem = node.get("public_key").asText();
+            PublicKey publicKey = parsePublicKey(publicKeyPem);
+            String computedNodeId = Utils.publicKeySignature(publicKey);
+
+            if (computedNodeId.equals(targetNodeId)) {
+                return publicKeyPem;
+            }
+        }
+
+        throw new IllegalArgumentException("Node ID not found in JSON: " + targetNodeId);
+    }
+
     
     public static PrivateKey loadPrivateKeyFromPem(String filename) throws Exception {
         String keyPem = Files.readString(Paths.get(filename))
