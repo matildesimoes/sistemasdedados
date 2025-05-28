@@ -117,6 +117,57 @@ public class main{
         }
     }
 
+    public static Map<String, Object> rebuildAuctions(Node node, PeerNode peer) {
+        Map<Integer, String> myAuctions = new HashMap<>();
+        Set<String> activeAuctions = new HashSet<>();
+
+        Map<Integer, Transaction> createdAuctionTxs = new HashMap<>();
+        Set<Integer> startedAuctions = new HashSet<>();
+        Set<Integer> closedAuctions = new HashSet<>();
+
+        String myNodeId = node.getNodeId();
+        List<Block> blocks = node.getBlockchain().getMainChainBlocks();
+
+        for (Block block : blocks) {
+            for (Transaction tx : block.getTransaction()) {
+                int auctionId = tx.getAuctionNumber();
+
+                switch (tx.getType()) {
+                    case CREATE_AUCTION:
+                        createdAuctionTxs.put(auctionId, tx);
+                        if (tx.getCreatorId().equals(myNodeId)) {
+                            myAuctions.put(auctionId, tx.getInformation());
+                        }
+                        break;
+                    case START_AUCTION:
+                        startedAuctions.add(auctionId);
+                        break;
+                    case CLOSE_AUCTION:
+                        closedAuctions.add(auctionId);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        for (Integer auctionId : startedAuctions) {
+            if (!closedAuctions.contains(auctionId) && createdAuctionTxs.containsKey(auctionId)) {
+                Transaction tx = createdAuctionTxs.get(auctionId);
+
+                if (!tx.getCreatorId().equals(myNodeId)) {
+                    peer.addActiveAuctions(tx);
+                }
+            }
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("myAuctions", myAuctions);
+        result.put("activeAuctions", activeAuctions);
+        return result;
+    }
+
+
     public static void main(String[] args){
 
         if (args.length < 1) {
@@ -168,19 +219,12 @@ public class main{
 
         future = scheduler.scheduleAtFixedRate(task, Utils.TRANS_POOL_LIMIT_TIME, Utils.TRANS_POOL_LIMIT_TIME, TimeUnit.SECONDS);
 
+        Map<String, Object> auctions = rebuildAuctions(node,peer);
+        myAuctions = (Map<Integer, String>) auctions.get("myAuctions");
+        Set<String> activeAuctions = (Set<String>) auctions.get("activeAuctions");
+
         Scanner in = new Scanner(System.in);
 
-        /* Test 
-        Block tempBlock = node.getBlockchain().addBlock(null, node.getBlockchain().getChains().get(0));
-
-        Block tempBlock2 = node.getBlockchain().addBlock(null, node.getBlockchain().getChains().get(0));
-
-        tempBlock2.getBlockHeader().setPrevHash(tempBlock.getBlockHeader().getHash());
-
-        Block tempBlock3 = node.getBlockchain().addBlock(null, node.getBlockchain().getChains().get(0));
-
-        tempBlock3.getBlockHeader().setPrevHash(tempBlock.getBlockHeader().getPrevHash());
-        */
 
         while (true) {
             System.out.println("\n=======================================");
@@ -305,7 +349,7 @@ public class main{
                                 fullPoolLogic(node,peer,start, future,task);
                                 break;
                             case "3":
-                                Set<String> activeAuctions = peer.getActiveAuctions();
+                                activeAuctions = peer.getActiveAuctions();
                                 int index = 1;
                                 for (String auction : activeAuctions) {
                                     System.out.println(index + ". " + auction);
@@ -526,6 +570,8 @@ public class main{
         }
     }
 
+
 }
+
 
 

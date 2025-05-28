@@ -359,7 +359,7 @@ public class PeerNode {
 
         int totalPeers = peerRecentBlocks.size();
         int majorityThreshold = totalPeers / 2 + 1;
-        System.out.println("[DEBUG] Peers with at least one shared block: " + compatiblePeers.size() + "/" + totalPeers);
+        System.out.println("Peers with at least one shared block: " + compatiblePeers.size() + "/" + totalPeers);
 
         boolean isConsistent = compatiblePeers.size() >= majorityThreshold;
 
