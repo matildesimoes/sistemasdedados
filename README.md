@@ -2,6 +2,8 @@
 
 This document explains how to compile and run the distributed system, both locally and over a public network.
 
+Master in Information Security
+
 ---
 
 ## Demonstration
