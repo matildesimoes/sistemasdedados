@@ -34,18 +34,18 @@ The platform was tested across **multiple virtual machines (VMs)** in the Google
 ├── lib/ # External libraries
 ├── src/ # Java source code (blockchain, Kademlia, auction logic)
 ├── .gitignore 
-└── README.md 
+├── README.md 
+├── Report.pdf 
 ├── dependency-reduced-pom.xml 
+├── execution.md # Instructions to run and test the system
 ├── fault_injection_test.txt 
 ├── pom.xml 
 ├── run.sh # Bash script to launch node(s)
-├── execution.md # Instructions to run and test the system
-├── report.pdf 
-├── sistemasdedados.iml 
+└── sistemasdedados.iml
 ```
 ## Project Report
 
-The full design, implementation, security mechanisms, and evaluation are detailed in [`Report.pdf`](Report.pdf).
+The full design, implementation, security mechanisms, and evaluation are detailed in **Report.pdf**
 
 
 
