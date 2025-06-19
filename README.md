@@ -1,73 +1,52 @@
-# Execution of the Distributed Solution
+# Public Ledger for Decentralized Auctions
 
-This document explains how to compile and run the distributed system, both locally and over a public network.
+This repository contains the final project for the **Security of Systems and Data** course 2024/2025. It implements a **secure and decentralized auction platform** using a custom blockchain and a secure peer-to-peer (P2P) network based on the S/Kademlia protocol.
 
----
+## Project Summary
 
-## Demonstration
+The system enables the creation, propagation, and validation of auction transactions in a distributed environment without a central authority. It ensures **authenticity**, **integrity**, and **transparency** of all operations through cryptographic guarantees and consensus mechanisms.
 
-Watch the execution example on YouTube:
+The platform was tested across **multiple virtual machines (VMs)** in the Google Cloud Platform (GCP), simulating real-world distributed operation.
 
-[Demonstration Video](https://www.youtube.com/watch?v=VD3HqWd1Iuk)
+## Core Technologies & Concepts
 
----
+- **Blockchain with Merkle Trees**
+- **Proof-of-Work (PoW)** for block mining
+- **Digital Signatures (RSA + SHA-256)** for authentication
+- **Secure P2P network** using the S/Kademlia protocol
+- **Consensus and fork resolution** mechanisms
+- **Fault injection handling** (malicious node testing)
+- **Optional Proof-of-Reputation (PoR)** extension
 
-## Prerequisites
+## Architecture Overview
 
-- Java 21
-- Maven (`mvn`) installed
-- Execution permission for the `run.sh` script
+- **Distributed Ledger**: Implements a secure blockchain with digital signatures and tamper-proof structure.
+- **P2P Network**: Each node has a unique identity derived from its public key and maintains a routing table.
+- **Auction Logic**: Implemented with transaction types: `CREATE_AUCTION`, `START_AUCTION`, `BID`, `CLOSE_AUCTION`.
+- **Consensus Mechanism**: Forks resolved by timestamp and chain height; PoW used to validate new blocks.
+- **Security Checks**: Signature validation, Merkle root comparison, transaction timestamp enforcement.
+- **Fault Tolerance**: Includes detection of invalid/malicious blocks and recovery from orphan blocks.
 
----
-
-## Step-by-Step Execution
-
-### 1. Compile the project
-
-```bash
-mvn compile
+## Repository Structure
 ```
-
----
-
-## Running Locally
-
-### Start the first node (port between `5000` and `5004`):
-
-```bash
-./run.sh 127.0.0.1:5000
+/
+├── data/ # Keys and local network state (blockchain and routing table)
+├── lib/ # External libraries
+├── src/ # Java source code (blockchain, Kademlia, auction logic)
+├── .gitignore 
+└── README.md 
+├── dependency-reduced-pom.xml 
+├── fault_injection_test.txt 
+├── pom.xml 
+├── run.sh # Bash script to launch node(s)
+├── execution.md # Instructions to run and test the system
+├── report.pdf 
+├── sistemasdedados.iml 
 ```
+## Project Report
 
-### Add a second node (using the bootstrap node's IP and port):
+The full design, implementation, security mechanisms, and evaluation are detailed in [`Report.pdf`](Report.pdf).
 
-```bash
-./run.sh 127.0.0.1:5001 127.0.0.1:5000
-```
 
-Repeat this step with other ports (`5002`, `5003`, etc.) to simulate a local network with multiple nodes.
 
----
 
-## Running on a Public Network
-
-1. Open the configuration file:
-
-```bash
-data/infonode.json
-```
-
-2. Replace the local IPs with the public IPs of each machine in the network.
-
-3. On each machine, run the node with the appropriate IP/port and the IP of the bootstrap node:
-
-```bash
-./run.sh <PUBLIC_IP:PORT> [BOOTSTRAP_IP:PORT]
-```
-
-Example:
-
-```bash
-./run.sh 34.123.45.67:5001 34.111.22.10:5000
-```
-
----
